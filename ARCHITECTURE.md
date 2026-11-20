@@ -28,3 +28,10 @@ python -m http.server 8000 --directory output/site
 ```
 
 Visit `http://localhost:8000/`. Building without the archive produces the page and saved examples for reviewing the UI. The live worker requires the runtime archive. The GitHub workflow builds the whole site, exercises each industry through the browser, deploys the artifact and reads back the public page and replay file. [Framework and data attribution](THIRD_PARTY.md)
+
+```sh
+python scripts/build_studio.py --standalone-preview output/studio-preview.html
+python agent.py inspection-queue --domain manufacturing --max-tools 1 --inspection-slots 5 --json
+```
+
+The standalone HTML opens from disk and provides the saved reports, batch replay, table exports, and review tools. The hosted Studio shares one worker between single requests and sequential batches. Batch checkpoints use tab storage. Review changes live in browser storage and export with the exact report they reference. The capacity controls compare eight reports from the same generated device data. The CLI can recompute a selected capacity with the bundled or compatible locally supplied data.

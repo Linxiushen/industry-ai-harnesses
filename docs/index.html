@@ -3,75 +3,188 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="在浏览器里运行临床运营、设备运维和能源负荷 Agent。改写任务，设置预算，查看每一步决策和证据。">
-  <meta name="theme-color" content="#f7f8f4">
-  <title>行业 Agent 工作台 · Industry AI Harnesses</title>
+  <meta name="description" content="面向制药临床、制造和能源运营的开源 Agent 工作台。探索 27 个可回放场景，核对数据、结果和执行轨迹。">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:title" content="Industry Agent Studio · 行业 Agent 工作台">
+  <meta property="og:description" content="三大行业，27 个可回放的业务场景。查看决策、数据依据和执行轨迹。">
+  <meta property="og:url" content="https://linxiushen.github.io/industry-ai-harnesses/">
+  <title>行业 Agent 工作台 · Industry Agent Studio</title>
   <link rel="stylesheet" href="./studio.css">
+  <link rel="stylesheet" href="./result-table.css">
+  <link rel="stylesheet" href="./result-review.css">
+  <link rel="stylesheet" href="./batch-workspace.css">
+  <link rel="stylesheet" href="./inspection-capacity.css">
+  <script defer src="./run-history.js"></script>
+  <script defer src="./runtime-client.js"></script>
+  <script defer src="./result-table.js"></script>
+  <script defer src="./result-evidence.js"></script>
+  <script defer src="./result-review.js"></script>
+  <script defer src="./batch-workspace.js"></script>
+  <script defer src="./inspection-capacity.js"></script>
   <script defer src="./studio.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#workspace">跳到工作台</a>
-  <header class="masthead">
-    <div class="mast-inner">
-      <a class="brand" href="./" aria-label="Industry AI Harnesses 首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Industry AI Harnesses</span></a>
-      <nav aria-label="项目导航">
-        <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/README.zh-CN.md">使用说明</a>
-        <a class="repo-link" href="https://github.com/Linxiushen/industry-ai-harnesses">GitHub <span aria-hidden="true">↗</span></a>
-      </nav>
-    </div>
-  </header>
-  <main id="workspace" class="page">
-    <div class="intro">
-      <h1>行业 Agent 工作台</h1>
-      <p>按业务阶段挑选任务，查看决策结果和依据。也可以修改任务，让 Agent 根据你的请求选工具。</p>
-    </div>
-    <noscript>这个交互工作台需要启用 JavaScript。你也可以从 GitHub 下载项目，用 Python 在本地运行。</noscript>
-    <fieldset class="domain-switch">
-      <legend class="sr-only">选择行业</legend>
-      <label class="domain-option"><input type="radio" name="domain" value="pharma" checked><span class="domain-en" lang="en">Clinical operations</span><strong>制药临床运营</strong><span class="domain-scenarios">试验立项 → 招募与监查 → 结题</span></label>
-      <label class="domain-option"><input type="radio" name="domain" value="manufacturing"><span class="domain-en" lang="en">Manufacturing</span><strong>制造运营</strong><span class="domain-scenarios">计划与物料 → 生产质检 → 发运</span></label>
-      <label class="domain-option"><input type="radio" name="domain" value="energy"><span class="domain-en" lang="en">Energy systems</span><strong>能源运营</strong><span class="domain-scenarios">项目评估 → 负荷管理 → 对账与报告</span></label>
-    </fieldset>
-    <section class="scenario-library" aria-labelledby="library-title">
-      <h2 id="library-title">业务场景</h2>
-      <div id="scenario-stages" class="scenario-stages"></div>
-    </section>
-    <div class="workbench">
-      <aside class="composer" aria-labelledby="compose-title">
-        <h2 id="compose-title">下达任务</h2>
-        <form id="request-form">
-          <label class="control-label" for="request">任务描述</label>
-          <textarea id="request" name="request" rows="4" maxlength="2000" required placeholder="例如：检索与慢性肾病相关的临床试验"></textarea>
-          <fieldset class="budget">
-            <legend class="control-label">最多调用几个工具</legend>
-            <div class="budget-options">
-              <label><input name="budget" type="radio" value="1"><span>1</span></label>
-              <label><input name="budget" type="radio" value="2"><span>2</span></label>
-              <label><input name="budget" type="radio" value="3" checked><span>3</span></label>
-            </div>
-          </fieldset>
-          <div class="run-actions">
-            <button class="primary" id="run" type="submit"><span class="play" aria-hidden="true"></span>运行 Agent</button>
-            <button class="secondary" id="stop" type="button" hidden>停止</button>
-          </div>
-          <p class="hint">在本机浏览器计算。首次运行需要联网加载 Python 环境。</p>
-        </form>
-        <div class="run-feedback" id="feedback" role="status" aria-live="polite" hidden></div>
-        <button class="replay" type="button" id="load-example" disabled>查看已保存的运行 <span aria-hidden="true">→</span></button>
-        <a class="method-link" id="method-link" href="https://github.com/Linxiushen/industry-ai-harnesses/tree/main/verticals/pharma">查看本行业的数据和方法 <span aria-hidden="true">↗</span></a>
-      </aside>
-      <section class="record" aria-labelledby="record-title">
-        <div class="record-head">
-          <h2 id="record-title" tabindex="-1">运行记录</h2>
-          <span id="record-mode" class="mode">读取示例中</span>
+  <div class="app-shell">
+    <button class="drawer-overlay" id="drawer-overlay" type="button" aria-label="关闭侧栏" hidden></button>
+    <aside class="sidebar" id="sidebar" aria-label="场景导航">
+      <div class="sidebar-head">
+        <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Industry Agent<span class="brand-subtitle">行业工作台</span></span></a>
+        <button class="icon-button drawer-close" id="drawer-close" type="button" aria-label="关闭侧栏">×</button>
+      </div>
+      <div class="sidebar-body">
+        <fieldset class="domain-switch">
+          <legend class="section-label">业务工作区</legend>
+          <label class="domain-option"><input type="radio" name="domain" value="pharma" checked><span class="domain-icon" aria-hidden="true">临</span><strong>制药临床</strong></label>
+          <label class="domain-option"><input type="radio" name="domain" value="manufacturing"><span class="domain-icon" aria-hidden="true">制</span><strong>制造运营</strong></label>
+          <label class="domain-option"><input type="radio" name="domain" value="energy"><span class="domain-icon" aria-hidden="true">能</span><strong>能源运营</strong></label>
+        </fieldset>
+        <div class="library-search">
+          <label class="section-label" for="scenario-search">场景库</label>
+          <input id="scenario-search" type="search" placeholder="搜索场景或业务阶段" autocomplete="off" aria-controls="scenario-stages">
         </div>
-        <div id="record-content" aria-busy="true"><p class="empty">正在读取随项目发布的真实运行记录。</p></div>
-      </section>
+        <div id="scenario-stages" class="scenario-stages"></div>
+      </div>
+      <footer class="sidebar-foot">
+        <a id="method-link" href="https://github.com/Linxiushen/industry-ai-harnesses/tree/main/verticals/pharma">数据与方法 ↗</a>
+        <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/THIRD_PARTY.md">开源许可 ↗</a>
+      </footer>
+    </aside>
+    <div class="app-main" id="app-main">
+      <header class="toolbar">
+        <div class="toolbar-start">
+          <button class="icon-button menu-toggle" id="menu-toggle" type="button" aria-label="打开侧栏" aria-controls="sidebar" aria-expanded="false"><span class="menu-icon" aria-hidden="true"></span></button>
+          <div class="toolbar-breadcrumb"><span>工作台</span><span aria-hidden="true">/</span><strong id="breadcrumb-domain">制药临床</strong></div>
+        </div>
+        <div class="toolbar-end">
+          <span class="runtime-label">浏览器内运行</span>
+          <a class="toolbar-link batch-link" href="#batch-workspace">批量</a>
+          <a class="toolbar-link history-link" href="#run-history">历史</a>
+          <a class="toolbar-link" href="https://github.com/Linxiushen/industry-ai-harnesses">GitHub ↗</a>
+        </div>
+      </header>
+      <main id="workspace" class="workspace" tabindex="-1">
+        <div class="workspace-inner">
+          <section class="intro" aria-labelledby="task-title">
+            <div class="hero-content">
+              <p class="hero-kicker">INDUSTRY AGENT STUDIO</p>
+              <h1 id="task-title">行业 Agent<br><span>决策工作台</span></h1>
+              <p class="hero-summary">从临床试验启动、制造排产到能源调度，用一套开源 Agent 工作台串起业务任务、数据依据与人工复核。</p>
+              <div class="hero-actions">
+                <a class="hero-primary" href="#task-console">打开工作台 <span aria-hidden="true">↓</span></a>
+                <a class="hero-secondary" href="#explore">浏览场景</a>
+              </div>
+              <p class="hero-meta"><span><strong id="industry-count">3</strong> 个行业</span><span><strong id="scenario-count">27</strong> 个可回放场景</span><span>开源 · 无需 API 密钥</span></p>
+            </div>
+            <div class="hero-evidence">
+              <div class="hero-evidence-head"><h2>快速回放</h2></div>
+              <ol class="hero-case-list" id="featured-case-list">
+                <li class="hero-case-loading">正在读取案例</li>
+              </ol>
+              <p class="hero-evidence-foot">打开案例即可核对结果、数据来源和执行轨迹</p>
+            </div>
+          </section>
+          <section id="task-console" class="task-panel task-console" aria-labelledby="console-title">
+            <div class="task-console-heading">
+              <p class="section-kicker">WORKBENCH / <span id="console-domain">制药临床</span></p>
+              <h2 class="console-title" id="console-title" tabindex="-1">运行一项业务任务</h2>
+              <p id="domain-label">查询试验登记，评估站点进度，整理临床运营待办。</p>
+            </div>
+            <form id="request-form" class="composer">
+              <label class="sr-only" for="request">任务描述</label>
+              <textarea id="request" name="request" rows="3" maxlength="2000" required placeholder="输入业务任务，或从场景库选择一个例子"></textarea>
+              <div class="composer-bar">
+                <fieldset class="budget">
+                  <legend class="sr-only">工具调用上限</legend>
+                  <span class="budget-label" aria-hidden="true">工具上限</span>
+                  <div class="budget-options">
+                    <label><input name="budget" type="radio" value="1"><span>1</span></label>
+                    <label><input name="budget" type="radio" value="2"><span>2</span></label>
+                    <label><input name="budget" type="radio" value="3" checked><span>3</span></label>
+                  </div>
+                </fieldset>
+                <div class="run-actions">
+                  <button class="secondary" id="stop" type="button" hidden>停止</button>
+                  <button class="secondary" id="compare-budget" type="button">预算对比</button>
+                  <button class="primary" id="run" type="submit">运行 Agent <span aria-hidden="true">↗</span></button>
+                </div>
+              </div>
+            </form>
+            <div class="inspection-setting" id="inspection-setting" hidden>
+              <span id="inspection-setting-text"></span>
+              <button type="button" class="secondary" id="reset-inspection-setting">恢复默认名额</button>
+            </div>
+            <div class="composer-meta">
+              <span class="shortcut" aria-hidden="true"><kbd id="run-shortcut">Ctrl</kbd> <kbd>Enter</kbd> 运行</span>
+              <button id="load-example" class="replay" type="button" disabled>查看已保存示例</button>
+            </div>
+            <div class="run-feedback" id="feedback" role="status" aria-live="polite" hidden></div>
+            <noscript><p>启用 JavaScript 后即可运行工作台。</p></noscript>
+          </section>
+          <section class="quick-start" aria-labelledby="quick-title">
+            <div class="quick-head"><h2 id="quick-title">常用任务</h2></div>
+            <div id="quick-grid" class="quick-grid"></div>
+          </section>
+          <section id="budget-comparison" class="record comparison" aria-labelledby="comparison-title" hidden>
+            <div class="record-head">
+              <h2 id="comparison-title" tabindex="-1">工具预算对比</h2>
+              <button id="close-comparison" class="secondary" type="button">关闭对比</button>
+            </div>
+            <div id="comparison-content"></div>
+          </section>
+          <section class="record" aria-labelledby="record-title">
+            <div class="record-head">
+              <h2 id="record-title" tabindex="-1">运行结果</h2>
+              <span id="record-mode" class="mode">读取示例中</span>
+            </div>
+            <div id="record-content" aria-busy="true"><p class="empty">正在读取已保存的示例。</p></div>
+          </section>
+          <section id="run-history" class="record history-panel" aria-labelledby="history-title">
+            <div class="record-head"><h2 id="history-title" tabindex="-1">运行历史</h2></div>
+            <div id="history-content"></div>
+          </section>
+          <section id="batch-workspace" class="batch-workspace" aria-labelledby="batch-title"></section>
+          <section id="inspection-capacity" class="record capacity-panel" aria-labelledby="capacity-title">
+            <div class="record-head"><h2 id="capacity-title" tabindex="-1">巡检容量推演</h2></div>
+            <div id="capacity-content"></div>
+          </section>
+          <section class="explore" id="explore" aria-labelledby="explore-title">
+            <div class="explore-head">
+              <p class="section-kicker">SCENARIO ATLAS</p>
+              <h2 id="explore-title">按业务阶段探索三个行业</h2>
+              <p>从启动、计划到复盘。展开任一行业，直接打开对应场景的运行记录。</p>
+            </div>
+            <div class="explore-grid" id="explore-grid"></div>
+          </section>
+          <section class="explore" id="casebook" aria-labelledby="casebook-title">
+            <div class="explore-head">
+              <p class="section-kicker">CASEBOOK</p>
+              <h2 id="casebook-title">三份可核对的决策样例</h2>
+              <p>每份案例都给出问题、运行发现、适用范围和数据出处。</p>
+            </div>
+            <div class="explore-grid" id="casebook-grid"></div>
+          </section>
+          <section class="method-strip" aria-labelledby="method-title">
+            <p class="section-kicker">UNDER THE HOOD</p>
+            <h2 id="method-title">从任务到可审计的运行记录</h2>
+            <ol class="method-steps">
+              <li><strong>解析任务</strong><span>识别行业和受支持的请求，遇到歧义先要求补充信息。</span></li>
+              <li><strong>按预算调用工具</strong><span>在限定调用次数内执行 Python 工具。制造交接可以把风险排序接到巡检和工单草稿。</span></li>
+              <li><strong>检查输出与来源</strong><span>区分历史登记、公开基准与合成数据，保留计算输入和过程。</span></li>
+              <li><strong>移交人工复核</strong><span>优先标出待核事项。可下载完整 JSON，或通过场景链接分享标准回放。</span></li>
+            </ol>
+          </section>
+          <footer class="page-foot">
+            <div><strong>Industry Agent Studio</strong><p>由 <a href="https://github.com/Linxiushen">Linxiushen</a> 维护的开源项目</p></div>
+            <nav aria-label="项目资源">
+              <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/ARCHITECTURE.md">运行架构 ↗</a>
+              <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/THIRD_PARTY.md">数据与许可 ↗</a>
+              <a href="https://github.com/Linxiushen/industry-ai-harnesses">GitHub 仓库 ↗</a>
+            </nav>
+          </footer>
+        </div>
+      </main>
     </div>
-  </main>
-  <footer class="footer">
-    <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/THIRD_PARTY.md">开源组件与许可</a>
-    <a href="https://github.com/Linxiushen">Linxiushen ↗</a>
-  </footer>
+  </div>
 </body>
 </html>

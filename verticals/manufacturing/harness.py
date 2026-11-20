@@ -17,6 +17,7 @@ from pathlib import Path
 SEED = 20261120
 BATCH = 25
 CAPACITY = 3
+MAX_INSPECTION_SLOTS = 8
 BINS = 12
 MODE_NAMES = {
     "HDF": "heat dissipation",
@@ -156,6 +157,11 @@ def review_batches(rows, scores, slots=CAPACITY):
         yield sorted(indexes, key=lambda i: (-scores[i], rows[i].sequence))[:slots]
 
 
+def validate_inspection_slots(slots):
+    if type(slots) is not int or not 1 <= slots <= MAX_INSPECTION_SLOTS:
+        raise ValueError(f"inspection_slots must be an integer from 1 to {MAX_INSPECTION_SLOTS}.")
+
+
 def draft(row, models):
     if not models:
         return {"suggested_category": "unclassified", "review_state": "draft", "evidence": []}
@@ -172,7 +178,8 @@ def draft(row, models):
     }
 
 
-def run(data_dir=None):
+def run(data_dir=None, *, slots=CAPACITY):
+    validate_inspection_slots(slots)
     if data_dir is None:
         rows = synthetic_rows()
         serial = json.dumps([list(vars(row).values()) for row in rows], separators=(",", ":"))
@@ -198,9 +205,11 @@ def run(data_dir=None):
     scores = [risk.score(row) for row in test]
     truth = [row.failed for row in test]
     wear = [row.wear for row in test]
-    queues = list(review_batches(test, scores))
+    queues = list(review_batches(test, scores, slots))
     selected = [i for queue in queues for i in queue]
-    baseline = [i for queue in review_batches(test, wear) for i in queue]
+    wear_queues = list(review_batches(test, wear, slots))
+    baseline = [i for queue in wear_queues for i in queue]
+    expected_sizes = [min(slots, len(test) - start) for start in range(0, len(test), BATCH)]
     caught = sum(truth[i] for i in selected)
     cases = [{"sequence": test[i].sequence, "review_batch": batch,
               "rank_within_batch": rank, **draft(test[i], models)}
@@ -220,7 +229,7 @@ def run(data_dir=None):
                          "wear_only_average_precision": average_precision(wear, truth),
                          "prevalence": sum(truth) / len(truth)}},
             {"id": "inspection-queue", "user": "Maintenance planner",
-             "output": {"records_per_batch": BATCH, "slots_per_batch": CAPACITY,
+             "output": {"records_per_batch": BATCH, "slots_per_batch": slots,
                         "batches": [[test[i].sequence for i in queue] for queue in queues]},
              "metrics": {"records_reviewed": len(selected), "failures_in_queue": caught,
                          "failures_outside_queue": sum(truth) - caught, "false_alerts": len(selected) - caught,
@@ -232,7 +241,8 @@ def run(data_dir=None):
                          "queued_confirmed_failures": caught, "category_accuracy_among_queued_failures": correct / caught if caught else None}},
         ],
         "checks": {"evaluation_follows_training": train[-1].sequence < test[0].sequence,
-                   "queue_respects_capacity": all(len(queue) <= CAPACITY for queue in queues),
+                   "queue_respects_capacity": all([len(queue) for queue in ranked] == expected_sizes
+                                                  for ranked in (queues, wear_queues)),
                    "unique_review_cases": len(set(selected)) == len(selected),
                    "all_selected_cases_drafted": len(cases) == len(selected)},
     }

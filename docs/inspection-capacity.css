@@ -1,0 +1,144 @@
+.capacity-panel {
+  scroll-margin-block-start: 20px;
+}
+
+#capacity-content {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.capacity-context {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.capacity-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.capacity-control input {
+  min-inline-size: 84px;
+  inline-size: min(100%, 18rem);
+  min-block-size: 44px;
+  accent-color: var(--active);
+}
+
+.capacity-control output {
+  padding-inline: 6px;
+  border-radius: 5px;
+  background: var(--active-bg);
+  color: var(--active);
+  font-weight: 700;
+}
+
+.capacity-summary {
+  font-size: 14px;
+  font-weight: 630;
+}
+
+.capacity-chart {
+  max-inline-size: 700px;
+  padding: 8px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+
+.capacity-legend {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-inline: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.capacity-legend span::before {
+  display: inline-block;
+  inline-size: 9px;
+  block-size: 9px;
+  margin-inline-end: 5px;
+  border-radius: 2px;
+  background: var(--bar-color);
+  content: "";
+}
+
+.capacity-hit { --bar-color: var(--active); }
+.capacity-alert { --bar-color: #a86524; }
+
+.capacity-columns {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+  margin-block-start: 6px;
+}
+
+.capacity-column {
+  display: grid;
+  min-inline-size: 0;
+  gap: 4px;
+  padding: 4px 2px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: center;
+}
+
+.capacity-column:hover, .capacity-column[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active);
+}
+
+.capacity-bars {
+  display: flex;
+  block-size: 64px;
+  justify-content: center;
+  align-items: end;
+  gap: 2px;
+}
+
+.capacity-bars i {
+  inline-size: min(12px, 38%);
+  border-radius: 2px 2px 0 0;
+  background: var(--bar-color);
+}
+
+.capacity-slot { font-size: 12px; }
+
+.capacity-panel table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  max-inline-size: 700px;
+  font-size: 13px;
+  text-align: start;
+}
+
+.capacity-panel th,
+.capacity-panel td {
+  padding: 8px 6px;
+  border-block-end: 1px solid var(--rule);
+}
+
+.capacity-panel th {
+  text-align: start;
+}
+
+.capacity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inspection-setting:not([hidden]) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-block-start: 10px;
+  color: var(--copy);
+  font-size: 13px;
+}
