@@ -45,6 +45,7 @@ DOMAINS = {
 ADAPTIVE = "triage|handoff|shift brief|shift briefing|分诊|交接|值班简报|排查"
 ALL = "all tools|all scenarios|全部场景"
 CORE_WORKFLOW = "full workflow|全流程"
+CAPACITY_TOOLS = {"inspection-queue", "work-order-evidence"}
 CONDITIONS = {
     "非小细胞肺癌": "NSCLC", "慢阻肺": "COPD", "慢性阻塞性肺病": "COPD", "膝骨关节炎": "knee osteoarthritis",
     "双相情感障碍": "bipolar disorder", "偏头痛": "migraine", "血液透析": "hemodialysis",
@@ -197,7 +198,15 @@ def _tool(s, tool):
     if domain != "pharma":
         if domain not in s["cache"]:
             module = {"energy": energy, "manufacturing": manufacturing}[domain]
-            report = module.run(s["data_dir"])
+            slots = s["inspection_slots"]
+            if slots is not None and domain == "manufacturing":
+                report = manufacturing.run(s["data_dir"], slots=slots)
+                report["data"]["inspection_capacity"] = {
+                    "slots_per_batch": slots,
+                    "default_slots_per_batch": manufacturing.CAPACITY,
+                }
+            else:
+                report = module.run(s["data_dir"])
             if not all(report["checks"].values()):
                 raise ValueError("Domain evaluation failed its data or workload checks.")
             s["report"]["data"] = report["data"]
@@ -261,6 +270,17 @@ class Plan(Node):
         if s["data_dir"] is not None and any(tool in ADDITIONAL for tool in pending):
             s["reason"] = "This scenario uses its bundled operations data. Run it without a custom data directory."
             return "clarify"
+        adaptive = planner is None and _matches(request.casefold(), ADAPTIVE)
+        if s["inspection_slots"] is not None:
+            budget = report["max_tools"]
+            # Follow-ups enter the queue after the original plan. Reserve a
+            # remaining tool call if inspection depends on risk triage first.
+            planned = CAPACITY_TOOLS.intersection(pending[:budget])
+            via_triage = adaptive and len(pending) < budget and "condition-monitoring" in pending
+            if not (planned or via_triage):
+                s["reason"] = "Inspection capacity needs a reachable inspection queue or work order in the tool budget."
+                return "clarify"
+            params["inspection_slots"] = s["inspection_slots"]
         if "trial_landscape" in pending:
             if not params.get("query"):
                 params["query"] = _condition(request.casefold())
@@ -276,7 +296,7 @@ class Plan(Node):
                                      request, flags=re.IGNORECASE)
                 country = location[1].strip().title() if location else "United States"
             params["country"] = country
-        s.update(pending=pending, params=params, adaptive=planner is None and _matches(request.casefold(), ADAPTIVE))
+        s.update(pending=pending, params=params, adaptive=adaptive)
         _step(s, "plan", "Selected registered tools for this request.", tools=list(pending), parameters=params,
               planner="external" if planner else "offline")
         return "tool"
@@ -380,7 +400,7 @@ class Finish(Node):
 
 
 def run_agent(request: str, *, domain: str | None = None, max_tools: int = 3,
-              planner=None, data_dir=None) -> dict:
+              planner=None, data_dir=None, inspection_slots: int | None = None) -> dict:
     """Run a bounded local graph. An optional planner receives (request, tool catalog)."""
     if not isinstance(request, str) or not request.strip() or len(request) > 4000:
         raise ValueError("Request must contain 1 to 4000 characters.")
@@ -388,8 +408,13 @@ def run_agent(request: str, *, domain: str | None = None, max_tools: int = 3,
         raise ValueError("Unknown domain.")
     if type(max_tools) is not int or not 1 <= max_tools <= 3:
         raise ValueError("max_tools must be an integer from 1 to 3.")
+    if inspection_slots is not None:
+        manufacturing.validate_inspection_slots(inspection_slots)
+        if domain != "manufacturing":
+            raise ValueError("inspection_slots requires an explicit manufacturing domain.")
     report = dict(request=request, domain=domain, status=None, max_tools=max_tools, steps=[], tools=[], review=[], data={})
-    shared = dict(report=report, hint=domain, planner=planner, data_dir=data_dir, cache={})
+    shared = dict(report=report, hint=domain, planner=planner, data_dir=data_dir,
+                  inspection_slots=inspection_slots, cache={})
     plan, execute, observe = Plan(), ExecuteTool(), Observe()
     error = Finish("error", "error")
     plan - "clarify" >> Finish("clarify", "needs_clarification")
