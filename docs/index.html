@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在浏览器里运行临床运营、设备运维和能源负荷 Agent。改写任务，设置预算，查看每一步决策和证据。">
+  <meta name="theme-color" content="#f7f8f4">
+  <title>行业 Agent 工作台 · Industry AI Harnesses</title>
+  <link rel="stylesheet" href="./studio.css">
+  <script defer src="./studio.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">跳到工作台</a>
+  <header class="masthead">
+    <div class="mast-inner">
+      <a class="brand" href="./" aria-label="Industry AI Harnesses 首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Industry AI Harnesses</span></a>
+      <nav aria-label="项目导航">
+        <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/README.zh-CN.md">使用说明</a>
+        <a class="repo-link" href="https://github.com/Linxiushen/industry-ai-harnesses">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="workspace" class="page">
+    <div class="intro">
+      <h1>行业 Agent 工作台</h1>
+      <p>选一个行业，告诉 Agent 你要做的决定。查看它调用了哪些工具、依据什么数据，以及哪些结果还需要人来判断。</p>
+    </div>
+    <noscript>这个交互工作台需要启用 JavaScript。你也可以从 GitHub 下载项目，用 Python 在本地运行。</noscript>
+    <fieldset class="domain-switch">
+      <legend class="sr-only">选择行业</legend>
+      <label class="domain-option"><input type="radio" name="domain" value="pharma" checked><span class="domain-en" lang="en">Clinical operations</span><strong>制药临床运营</strong><span class="domain-scenarios">试验检索 · 招募站点 · 登记跟进</span></label>
+      <label class="domain-option"><input type="radio" name="domain" value="manufacturing"><span class="domain-en" lang="en">Manufacturing</span><strong>制造设备运维</strong><span class="domain-scenarios">风险排序 · 限额巡检 · 工单草稿</span></label>
+      <label class="domain-option"><input type="radio" name="domain" value="energy"><span class="domain-en" lang="en">Energy systems</span><strong>能源负荷运营</strong><span class="domain-scenarios">日前预测 · 尖峰预警 · 错峰排班</span></label>
+    </fieldset>
+    <div class="workbench">
+      <aside class="composer" aria-labelledby="compose-title">
+        <h2 id="compose-title">下达任务</h2>
+        <form id="request-form">
+          <label class="control-label" for="request">任务描述</label>
+          <textarea id="request" name="request" rows="4" maxlength="2000" required placeholder="例如：检索与慢性肾病相关的临床试验"></textarea>
+          <fieldset class="budget">
+            <legend class="control-label">最多调用几个工具</legend>
+            <div class="budget-options">
+              <label><input name="budget" type="radio" value="1"><span>1</span></label>
+              <label><input name="budget" type="radio" value="2"><span>2</span></label>
+              <label><input name="budget" type="radio" value="3" checked><span>3</span></label>
+            </div>
+          </fieldset>
+          <div class="run-actions">
+            <button class="primary" id="run" type="submit"><span class="play" aria-hidden="true"></span>运行 Agent</button>
+            <button class="secondary" id="stop" type="button" hidden>停止</button>
+          </div>
+          <p class="hint">在本机浏览器计算。首次运行需要联网加载 Python 环境。</p>
+        </form>
+        <div class="run-feedback" id="feedback" role="status" aria-live="polite" hidden></div>
+        <button class="replay" type="button" id="load-example" disabled>查看已保存的运行 <span aria-hidden="true">→</span></button>
+        <a class="method-link" id="method-link" href="https://github.com/Linxiushen/industry-ai-harnesses/tree/main/verticals/pharma">查看本行业的数据和方法 <span aria-hidden="true">↗</span></a>
+      </aside>
+      <section class="record" aria-labelledby="record-title">
+        <div class="record-head">
+          <h2 id="record-title">运行记录</h2>
+          <span id="record-mode" class="mode">读取示例中</span>
+        </div>
+        <div id="record-content" aria-busy="true"><p class="empty">正在读取随项目发布的真实运行记录。</p></div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer">
+    <a href="https://github.com/Linxiushen/industry-ai-harnesses/blob/main/THIRD_PARTY.md">开源组件与许可</a>
+    <a href="https://github.com/Linxiushen">Linxiushen ↗</a>
+  </footer>
+</body>
+</html>

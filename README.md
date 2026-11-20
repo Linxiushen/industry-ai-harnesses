@@ -1,5 +1,15 @@
 # Industry AI Harnesses
 
+[**Open the live Agent Studio**](https://linxiushen.github.io/industry-ai-harnesses/) · [中文说明](README.zh-CN.md)
+
+Ask the agent to find historical COPD trials, allocate inspection slots or prepare an electricity shift briefing. Each run shows its tool choices, observations, remaining work and evidence for the reviewer. Try a one-tool budget on a manufacturing handoff, then raise it to three to see how the inspection queue leads to work-order drafts. The browser executes the Python graph locally after downloading the runtime. Saved examples are available immediately.
+
+```sh
+python agent.py "Prepare a manufacturing shift briefing" --max-tools 3 --out output/shift.json
+```
+
+The default planner uses domain vocabulary and explicit rules. Observations can add a follow-up tool, request clarification or route decisions for review. The budget counts distinct tool decisions surfaced to the user. Energy and manufacturing share one backtest per domain request. To try model-based planning with a model you already serve on localhost, add `--local-model YOUR_MODEL --port 11434` to the CLI command. [Architecture, deployment and limits](ARCHITECTURE.md)
+
 Three runnable reference projects for teams evaluating where AI can help with operational decisions. A clinical operations analyst gets trial evidence and follow-up queues, a maintenance planner gets a fixed number of inspections, and an energy planner gets tomorrow's load forecast and shift schedule. Each harness produces JSON with decisions, supporting data, baseline comparisons and checks.
 
 [中文项目导览](README.zh-CN.md) · [Clinical trial operations](verticals/pharma/README.md) · [Manufacturing maintenance](verticals/manufacturing/README.md) · [Electricity demand](verticals/energy/README.md)

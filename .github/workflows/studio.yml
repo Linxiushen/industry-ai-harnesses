@@ -1,0 +1,49 @@
+name: Publish agent studio
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: agent-studio-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check agent and planner contracts
+        run: python -m unittest discover -s tests -v
+      - name: Build site and verify runtime checksum
+        run: |
+          curl --fail --location --retry 2 --output "$RUNNER_TEMP/core.tar.bz2" https://github.com/pyodide/pyodide/releases/download/0.27.7/pyodide-core-0.27.7.tar.bz2
+          python scripts/build_studio.py --runtime-archive "$RUNNER_TEMP/core.tar.bz2"
+      - name: Exercise live Python in headless Chrome
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.56.0
+          python scripts/check_studio.py --directory output/site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4
+      - name: Verify public studio entry and replay data
+        env:
+          SITE_URL: ${{ steps.pages.outputs.page_url }}
+        run: |
+          curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/" --output /tmp/studio.html
+          curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/replays.json" | python -c "import json,sys; assert {r['domain'] for r in json.load(sys.stdin)['examples']} == {'pharma','energy','manufacturing'}"
