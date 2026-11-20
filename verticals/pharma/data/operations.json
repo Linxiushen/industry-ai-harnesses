@@ -1,0 +1,71 @@
+{
+  "as_of": "2025-06-30",
+  "site_startup": {
+    "study": "SIM-START",
+    "lookahead_days": 14,
+    "required": ["合同生效", "培训留档", "系统权限核对"],
+    "sites": [
+      {"site": "S-101", "owner": "启动组", "planned": "2025-06-27", "checks": {"合同生效": true, "培训留档": false, "系统权限核对": true}},
+      {"site": "S-102", "owner": "区域协调组", "planned": "2025-07-02", "checks": {"合同生效": true, "培训留档": true, "系统权限核对": true}},
+      {"site": "S-103", "owner": "启动组", "planned": "2025-07-09", "checks": {"合同生效": true, "培训留档": true}},
+      {"site": "S-104", "owner": "区域协调组", "planned": "2025-07-26", "checks": {"合同生效": false, "培训留档": false, "系统权限核对": false}}
+    ]
+  },
+  "enrollment_forecast": {
+    "study": "SIM-ACTIVE",
+    "horizon_weeks": 4,
+    "window_weeks": 4,
+    "study_target": 76,
+    "sites": [
+      {"site": "S-201", "current": 22, "capacity": 45, "weekly": [3, 4, 5, 4], "recruiting": true},
+      {"site": "S-202", "current": 11, "capacity": 20, "weekly": [4, 5, 3, 4], "recruiting": true},
+      {"site": "S-203", "current": 6, "capacity": 22, "weekly": [0, 1], "recruiting": true},
+      {"site": "S-204", "current": 4, "capacity": 10, "weekly": [1, 2, 0, 1], "recruiting": false}
+    ]
+  },
+  "monitoring_queue": {
+    "study": "SIM-ACTIVE",
+    "window_days": 14,
+    "visit_slots": 2,
+    "sites": [
+      {"site": "S-201", "due": "2025-06-25", "high_priority_findings": 0, "confirmed_availability": true, "owner": "东区监查组"},
+      {"site": "S-202", "due": "2025-07-09", "high_priority_findings": 2, "confirmed_availability": true, "owner": "东区监查组"},
+      {"site": "S-203", "due": "2025-06-30", "high_priority_findings": 1, "confirmed_availability": false, "owner": "西区监查组"},
+      {"site": "S-204", "due": "2025-07-10", "high_priority_findings": 0, "confirmed_availability": true, "owner": "西区监查组"},
+      {"site": "S-205", "due": "2025-07-24", "high_priority_findings": 0, "confirmed_availability": true, "owner": "北区监查组"}
+    ]
+  },
+  "data_query_aging": {
+    "study": "SIM-ACTIVE",
+    "sla_days": {"high": 7, "standard": 14},
+    "queries": [
+      {"query": "Q-001", "site": "S-201", "opened": "2025-06-12", "state": "open", "priority": "standard", "topic": "文档日期对账", "owner": "站点协调组"},
+      {"query": "Q-002", "site": "S-202", "opened": "2025-06-23", "state": "open", "priority": "high", "topic": "导入批次对账", "owner": "数据管理组"},
+      {"query": "Q-003", "site": "S-202", "opened": "2025-06-26", "state": "open", "priority": "standard", "topic": "表单版本不一致", "owner": "数据管理组"},
+      {"query": "Q-004", "site": "S-203", "opened": "2025-06-04", "state": "closed", "priority": "high", "topic": "文档日期对账", "owner": "站点协调组"},
+      {"query": "Q-005", "site": "S-204", "opened": null, "state": "open", "priority": "standard", "topic": "缺少附件", "owner": "站点协调组"},
+      {"query": "Q-006", "site": "S-203", "opened": "2025-06-18", "state": "open", "priority": "high", "topic": "导入批次对账", "owner": "数据管理组"}
+    ]
+  },
+  "supply_triage": {
+    "study": "SIM-ACTIVE",
+    "buffer_days": 3,
+    "items": [
+      {"site": "S-201", "sku": "MAT-001", "material": "访视提醒卡", "on_hand": 20, "daily_usage": 5, "lead_days": 7, "incoming": [{"due": "2025-07-06", "units": 18}]},
+      {"site": "S-201", "sku": "MAT-002", "material": "资料归档夹", "on_hand": 7, "daily_usage": 1, "lead_days": 6, "incoming": []},
+      {"site": "S-202", "sku": "MAT-001", "material": "访视提醒卡", "on_hand": 24, "daily_usage": 3, "lead_days": 7, "incoming": [{"due": "2025-07-04", "units": 18}]},
+      {"site": "S-203", "sku": "MAT-003", "material": "物资标签", "on_hand": 12, "daily_usage": 2, "lead_days": 5, "incoming": [{"due": "2025-07-09", "units": 12}]},
+      {"site": "S-204", "sku": "MAT-002", "material": "资料归档夹", "on_hand": 18, "daily_usage": null, "lead_days": 6, "incoming": []}
+    ]
+  },
+  "closeout_readiness": {
+    "study": "SIM-CLOSE",
+    "required_evidence": ["必备文件归档", "权限撤销确认", "资产移交签收", "结题访视记录"],
+    "sites": [
+      {"site": "S-301", "owner": "结题组", "planned": "2025-06-30", "open_actions": 0, "documents": {"必备文件归档": "ARC-101", "权限撤销确认": "ACC-101", "资产移交签收": "AST-101", "结题访视记录": "VIS-101"}},
+      {"site": "S-302", "owner": "档案组", "planned": "2025-06-28", "open_actions": 2, "documents": {"必备文件归档": "ARC-102", "权限撤销确认": "ACC-102", "资产移交签收": null, "结题访视记录": "VIS-102"}},
+      {"site": "S-303", "owner": "结题组", "planned": "2025-07-07", "open_actions": 0, "documents": {"必备文件归档": "ARC-103", "权限撤销确认": "ACC-103", "资产移交签收": "AST-103"}},
+      {"site": "S-304", "owner": "档案组", "planned": "2025-07-03", "open_actions": 1, "documents": {"必备文件归档": "ARC-104", "权限撤销确认": "ACC-104", "资产移交签收": "AST-104", "结题访视记录": "VIS-104"}}
+    ]
+  }
+}

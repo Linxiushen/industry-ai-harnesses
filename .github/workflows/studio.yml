@@ -47,3 +47,4 @@ jobs:
         run: |
           curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/" --output /tmp/studio.html
           curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/replays.json" | python -c "import json,sys; assert {r['domain'] for r in json.load(sys.stdin)['examples']} == {'pharma','energy','manufacturing'}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/catalog.json" | python -c "import collections,json,sys; assert collections.Counter(r['domain'] for r in json.load(sys.stdin)['scenarios']) == {'pharma':9,'energy':9,'manufacturing':9}"

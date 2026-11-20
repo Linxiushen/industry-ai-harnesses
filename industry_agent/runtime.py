@@ -7,13 +7,14 @@ import re
 from datetime import date
 from pathlib import Path
 
+from industry_agent.catalog import ADDITIONAL, OPERATIONS, ORIGINAL, entries
 from industry_agent.vendor.pocketflow import Flow, Node
 from verticals.energy import harness as energy
 from verticals.manufacturing import harness as manufacturing
 from verticals.pharma import harness as pharma
 
 
-# Only these nine project-owned adapters can be called by a planner.
+# A planner can dispatch only registered adapters.
 TOOLS = {
     "trial_landscape": ("pharma", "Retrieve historical trials for a condition with ranked evidence.",
                         "trial search|historical|landscape|find trials|search trials|trial evidence|检索|试验检索|研究证据"),
@@ -34,13 +35,16 @@ TOOLS = {
     "flexible-load-scheduling": ("energy", "Schedule a movable load block against a fixed-start baseline.",
                                  "schedule|scheduling|dispatch|flexible load|flexible-load|排班|调度|移峰|可调负荷|安排充电"),
 }
+TOOLS.update({tool: (domain, item["description"], item.get("aliases", item["title"]))
+              for tool, (domain, item) in ADDITIONAL.items()})
 DOMAINS = {
     "pharma": "pharma|pharmaceutical|registry|clinical|trial|studies|制药|临床|试验|登记|招募",
     "manufacturing": "manufacturing|machine|equipment|maintenance|factory|inspection|work order|制造|设备|维修|工单|巡检|传感器",
     "energy": "energy|electricity|power grid|demand response|load|能源|电力|负荷|用电|电网|尖峰",
 }
 ADAPTIVE = "triage|handoff|shift brief|shift briefing|分诊|交接|值班简报|排查"
-ALL = "full workflow|all tools|all scenarios|全流程|全部场景"
+ALL = "all tools|all scenarios|全部场景"
+CORE_WORKFLOW = "full workflow|全流程"
 CONDITIONS = {
     "非小细胞肺癌": "NSCLC", "慢阻肺": "COPD", "慢性阻塞性肺病": "COPD", "膝骨关节炎": "knee osteoarthritis",
     "双相情感障碍": "bipolar disorder", "偏头痛": "migraine", "血液透析": "hemodialysis",
@@ -92,8 +96,16 @@ def _condition(text):
 
 
 def _offline_plan(request, hint):
-    text = request.casefold()
+    text = request.casefold().strip()
+    exact = next((entry for entry in entries()
+                  if text in (entry["prompt"].casefold(), entry["id"])), None)
+    if exact and (not hint or hint == exact["domain"]):
+        return {"domain": exact["domain"], "tools": [exact["id"]]}
     matches = {d for d, terms in DOMAINS.items() if _matches(text, terms)}
+    expanded = [i for i, (_, item) in ADDITIONAL.items()
+                if _matches(text, item.get("aliases", item["title"]))]
+    if not hint:
+        matches.update(TOOLS[i][0] for i in expanded)
     # Narrow technical phrases such as "peak-hour alert" also identify a domain.
     inferred_tools = [i for i, (_, _, terms) in TOOLS.items() if _matches(text, terms) or i in text]
     if not matches and not hint:
@@ -115,9 +127,13 @@ def _offline_plan(request, hint):
     if len(matches) != 1:
         return {"domain": None, "tools": []}
     domain = matches.pop()
-    ids = [i for i in inferred_tools if TOOLS[i][0] == domain]
+    ids = [i for i in expanded if TOOLS[i][0] == domain]
+    if not ids:
+        ids = [i for i in inferred_tools if TOOLS[i][0] == domain]
     if _matches(text, ALL):
         ids = [i for i in TOOLS if TOOLS[i][0] == domain]
+    elif _matches(text, CORE_WORKFLOW):
+        ids = [i for i, (d, *_) in ORIGINAL.items() if d == domain]
     if not ids and domain == "pharma" and _matches(text, "trial|studies|search|retrieve|find|试验|检索|查找"):
         ids = ["trial_landscape"]
     if not ids and _matches(text, ADAPTIVE):
@@ -126,12 +142,12 @@ def _offline_plan(request, hint):
     return {"domain": domain, "tools": ids}
 
 
-def _proposal(raw, hint):
+def _proposal(raw, hint, limit):
     if not isinstance(raw, dict) or set(raw) - {"domain", "tools", "query", "country"}:
         raise ValueError("Planner must return domain, tools, and optional query or country.")
     domain, ids = raw.get("domain"), raw.get("tools")
-    if not isinstance(ids, list) or len(ids) > 3 or any(not isinstance(i, str) for i in ids):
-        raise ValueError("Planner tools must be a list of at most three tool IDs.")
+    if not isinstance(ids, list) or len(ids) > limit or any(not isinstance(i, str) for i in ids):
+        raise ValueError(f"Planner tools must be a list of at most {limit} tool IDs.")
     if domain is None and ids == [] and "domain" in raw:
         return None, [], {}
     if not isinstance(domain, str) or domain not in DOMAINS or (hint and hint != domain):
@@ -176,6 +192,8 @@ def _read_pharma(s, key):
 
 def _tool(s, tool):
     domain = s["report"]["domain"]
+    if tool in ADDITIONAL:
+        return {"id": tool, **OPERATIONS[domain].run(tool)}
     if domain != "pharma":
         if domain not in s["cache"]:
             module = {"energy": energy, "manufacturing": manufacturing}[domain]
@@ -232,13 +250,16 @@ class Plan(Node):
         else:
             raw = _offline_plan(request, s["hint"])
         try:
-            domain, pending, params = _proposal(raw, s["hint"])
+            domain, pending, params = _proposal(raw, s["hint"], 3 if planner else len(TOOLS))
         except ValueError as exc:
             s["reason"] = str(exc)
             return "error"
         report["domain"] = domain
         if not pending:
             s["reason"] = "Specify one domain and its task, such as finding trials, allocating inspections or forecasting load."
+            return "clarify"
+        if s["data_dir"] is not None and any(tool in ADDITIONAL for tool in pending):
+            s["reason"] = "This scenario uses its bundled operations data. Run it without a custom data directory."
             return "clarify"
         if "trial_landscape" in pending:
             if not params.get("query"):
@@ -277,6 +298,9 @@ class ExecuteTool(Node):
 def _observe(tool):
     """Return an observation, a review reason, and a candidate evidence-driven next action."""
     key, m, out = tool["id"], tool["metrics"], tool["output"]
+    if key in ADDITIONAL:
+        title = ADDITIONAL[key][1]["title"]
+        return f"{title}输出 {len(out['records'])} 条业务记录。", tool["review"], None
     if key == "trial_landscape":
         n = m["hit_count"]
         return (f"{n} historical registry hits for '{out['query']}'.",
@@ -340,6 +364,14 @@ class Finish(Node):
 
     def post(self, s, prep_res, exec_res):
         report = s["report"]
+        fixture_sources = {tool["id"]: tool["data"] for tool in report["tools"] if "data" in tool}
+        if fixture_sources:
+            legacy = report["data"]
+            kinds = {source["kind"] for source in fixture_sources.values()}
+            if legacy.get("kind"):
+                kinds.add(legacy["kind"])
+            report["data"] = {"kind": "mixed" if len(kinds) > 1 else next(iter(kinds)),
+                              "source": {**({"original": legacy} if legacy else {}), **fixture_sources}}
         report["status"] = self.status
         if "reason" in s:
             report["review"].append(s["reason"])

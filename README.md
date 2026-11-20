@@ -2,6 +2,14 @@
 
 [**Open the live Agent Studio**](https://linxiushen.github.io/industry-ai-harnesses/) · [中文说明](README.zh-CN.md)
 
+The studio includes **27 runnable scenarios**, nine per industry. The scenario library follows business phases, with a replay and a new local execution for each decision. The 18 added cases use synthetic operating data.
+
+| Industry | Lifecycle coverage |
+| --- | --- |
+| Clinical trial operations | Evidence search, recruiting locations, site startup, enrollment forecast, supply inventory, monitoring visits, data query aging, registry follow-up, closeout readiness |
+| Manufacturing operations | Capacity, material coverage, finite scheduling, quality disposition, failure ranking, inspection queue, work-order evidence, OEE losses, shipment traceability |
+| Energy operations | PV screening, storage economics, demand forecast, peak watch, flexible load scheduling, demand response, service reliability, bill reconciliation, purchased electricity emissions |
+
 Ask the agent to find historical COPD trials, allocate inspection slots or prepare an electricity shift briefing. Each run shows its tool choices, observations, remaining work and evidence for the reviewer. Try a one-tool budget on a manufacturing handoff, then raise it to three to see how the inspection queue leads to work-order drafts. The browser executes the Python graph locally after downloading the runtime. Saved examples are available immediately.
 
 ```sh
@@ -16,7 +24,7 @@ Three runnable reference projects for teams evaluating where AI can help with op
 
 ## Run all nine workflows
 
-With Python 3.11+ in the checkout, run:
+With Python 3.11+ in the checkout, run the nine original benchmark workflows:
 
 ```sh
 python run.py all --out output/decisions.json

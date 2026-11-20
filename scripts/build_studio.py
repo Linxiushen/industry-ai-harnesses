@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from industry_agent.catalog import entries
 from industry_agent.runtime import run_agent
 
 CORE_SHA256 = "9bc8f127db6c590b191b9aee754022cb41b1a36c7bac233776c11c5ecb541be8"
@@ -52,6 +53,7 @@ def build(target, archive):
         shutil.copy2(ROOT / "docs" / name, target / name)
     files = set((ROOT / "industry_agent").rglob("*.py"))
     files.update((ROOT / "verticals").glob("*/harness.py"))
+    files.update((ROOT / "verticals").glob("*/operations.py"))
     files.update((ROOT / "verticals/pharma/data").glob("*.json"))
     files.add(ROOT / "industry_agent/vendor/pocketflow/LICENSE")
     write_json(target / "bundle.json", {"files": {
@@ -64,6 +66,19 @@ def build(target, archive):
             raise ValueError(f"Unusable saved example for {domain}: {report['status']}")
         examples.append({"domain": domain, "request": request, "report": report})
     write_json(target / "replays.json", {"examples": examples})
+    catalog = entries()
+    if len({item["id"] for item in catalog}) != len(catalog):
+        raise ValueError("Scenario IDs must be unique")
+    replay_dir = target / "scenarios"
+    replay_dir.mkdir(exist_ok=True)
+    for item in catalog:
+        tool_id = item["id"]
+        report = run_agent(item["prompt"], domain=item["domain"], max_tools=1)
+        if (report["status"] not in ("completed", "needs_review")
+                or [tool["id"] for tool in report["tools"]] != [tool_id]):
+            raise ValueError(f"Unusable replay for {tool_id}: {report['status']}")
+        write_json(replay_dir / f"{tool_id}.json", report)
+    write_json(target / "catalog.json", {"scenarios": catalog})
     shutil.copy2(ROOT / "THIRD_PARTY.md", target)
     shutil.copytree(ROOT / "licenses", target / "licenses", dirs_exist_ok=True)
     shutil.copy2(ROOT / "industry_agent/vendor/pocketflow/LICENSE", target / "licenses/PocketFlow.txt")

@@ -19,7 +19,7 @@ const stepNames = {
   clarify: "澄清", budget: "预算", error: "错误"
 };
 const sourceKinds = {
-  synthetic: "合成数据", mixed: "历史试验记录与模拟运营数据",
+  synthetic: "合成数据", mixed: "混合来源",
   historical_registry_metadata: "历史试验登记数据", external_csv: "外部 CSV"
 };
 const metricNames = {
@@ -51,8 +51,12 @@ const previewSpecs = {
 const byId = id => document.getElementById(id);
 const numeric = new Intl.NumberFormat("zh-CN", {maximumFractionDigits: 4});
 const examples = new Map();
+const scenarios = new Map();
+const savedReports = new Map();
 const drafts = new Map();
 let current = "pharma";
+let selected = null;
+let requestedReplay = 0;
 let worker = null;
 let running = false;
 let timeout;
@@ -67,6 +71,7 @@ function element(tag, content, style) {
 function describe(value) {
   if (value == null) return "未定义";
   if (typeof value === "number") return numeric.format(value);
+  if (typeof value === "boolean") return value ? "是" : "否";
   if (Array.isArray(value)) return value.length ? value.map(describe).join("、") : "无";
   return typeof value === "object" ? JSON.stringify(value) : String(value);
 }
@@ -93,7 +98,11 @@ function makeDisclosure(caption, data) {
   return details;
 }
 function preview(id, output) {
-  const spec = previewSpecs[id];
+  const columns = scenarios.get(id)?.columns;
+  const sample = output?.records?.[0];
+  const grid = columns && Object.keys(columns).length ? Object.entries(columns) :
+    Object.keys(sample ?? {}).slice(0, 5).map(key => [key, key.replaceAll("_", " ")]);
+  const spec = previewSpecs[id] ?? (Array.isArray(output?.records) && ["records", grid]);
   if (!spec || !output || !Array.isArray(output[spec[0]])) return null;
   const rows = output[spec[0]];
   if (!rows.length) return element("p", "本次没有符合条件的条目。", "empty");
@@ -140,14 +149,14 @@ function makeTool(tool, open) {
   const detail = element("details", undefined, "tool");
   detail.open = open;
   const label = element("div");
-  label.append(element("span", toolNames[tool.id] ?? tool.id, "tool-title"), element("code", tool.id, "tool-id"));
+  label.append(element("span", scenarios.get(tool.id)?.title ?? toolNames[tool.id] ?? tool.id, "tool-title"), element("code", tool.id, "tool-id"));
   const summary = element("summary");
   summary.append(label);
   detail.append(summary);
   const metrics = element("dl", undefined, "metric-grid");
   for (const [name, value] of Object.entries(tool.metrics ?? {})) {
     const metric = element("div");
-    const key = element("dt", metricNames[name] ?? name);
+    const key = element("dt", metricNames[name] ?? name.replaceAll("_", " "));
     key.title = name;
     metric.append(key, element("dd", describe(value)));
     metrics.append(metric);
@@ -229,11 +238,69 @@ function emptyRecord(modeText, message, busy = false) {
   content.setAttribute("aria-busy", String(busy));
 }
 function showSaved() {
+  if (selected) {
+    void showScenarioReplay(selected);
+    return;
+  }
   const example = examples.get(current);
   byId("load-example").disabled = !example || running;
   if (example) showReport(example.report, false);
   else if (examplesState === "loading") emptyRecord("读取中", "正在读取已保存的示例。", true);
   else emptyRecord("暂无示例", "示例文件未能读取。你仍可点击「运行 Agent」执行任务。");
+}
+function renderScenarios() {
+  const stages = byId("scenario-stages");
+  const groups = new Map();
+  for (const item of scenarios.values()) {
+    if (item.domain !== current) continue;
+    if (!groups.has(item.phase)) groups.set(item.phase, []);
+    groups.get(item.phase).push(item);
+  }
+  const columns = [];
+  for (const [phase, items] of groups) {
+    const column = element("section", undefined, "scenario-stage");
+    column.append(element("h3", phase));
+    for (const item of items) {
+      const button = element("button", item.title, "scenario");
+      button.type = "button";
+      button.dataset.scenario = item.id;
+      button.setAttribute("aria-pressed", String(selected?.id === item.id));
+      button.addEventListener("click", () => selectScenario(item));
+      column.append(button);
+    }
+    columns.push(column);
+  }
+  stages.replaceChildren(...columns);
+}
+function selectScenario(item) {
+  if (running) stopRun();
+  selected = item;
+  byId("request").setCustomValidity("");
+  byId("request").value = item.prompt;
+  for (const button of document.querySelectorAll("button[data-scenario]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.scenario === item.id));
+  }
+  showFeedback();
+  showSaved();
+}
+async function showScenarioReplay(item) {
+  const request = ++requestedReplay;
+  byId("load-example").disabled = running;
+  emptyRecord("读取中", "正在读取该场景的示例结果。", true);
+  try {
+    if (!savedReports.has(item.id)) {
+      const response = await fetch("./scenarios/" + encodeURIComponent(item.id) + ".json");
+      if (!response.ok) throw new Error("Scenario replay HTTP " + response.status);
+      savedReports.set(item.id, await response.json());
+    }
+    if (request === requestedReplay && selected === item && !running) {
+      showReport(savedReports.get(item.id), false);
+    }
+  } catch {
+    if (request === requestedReplay && selected === item && !running) {
+      emptyRecord("暂无示例", "示例暂时无法读取。仍可点击「运行 Agent」。");
+    }
+  }
 }
 function releaseWorker() {
   if (worker) worker.terminate();
@@ -246,7 +313,7 @@ function setRunning(next) {
   byId("run").disabled = next;
   byId("request").readOnly = next;
   document.querySelectorAll('input[name="budget"]').forEach(input => { input.disabled = next; });
-  byId("load-example").disabled = next || !examples.has(current);
+  byId("load-example").disabled = next || (!selected && !examples.has(current));
 }
 function stopRun() {
   releaseWorker();
@@ -269,6 +336,7 @@ function startRun(event) {
     return;
   }
   if (running) return;
+  requestedReplay++;
   const budget = Number(document.querySelector('input[name="budget"]:checked').value);
   setRunning(true);
   emptyRecord("执行中", "正在执行当前任务。", true);
@@ -297,10 +365,13 @@ function switchDomain(domain) {
   drafts.set(current, byId("request").value);
   if (running) stopRun();
   current = domain;
+  selected = null;
+  requestedReplay++;
   byId("request").setCustomValidity("");
   byId("request").value = drafts.get(domain) ?? examples.get(domain)?.request ?? domains[domain];
   byId("method-link").href = "https://github.com/Linxiushen/industry-ai-harnesses/tree/main/verticals/" + domain;
   showFeedback();
+  renderScenarios();
   showSaved();
 }
 byId("request-form").addEventListener("submit", startRun);
@@ -320,10 +391,19 @@ fetch("./replays.json").then(response => {
 }).then(data => {
   for (const example of data.examples) examples.set(example.domain, example);
   examplesState = "ready";
-  if (!running && byId("request").value === domains[current] && examples.has(current)) {
+  if (!selected && !running && byId("request").value === domains[current] && examples.has(current)) {
     byId("request").value = examples.get(current).request;
   }
 }).catch(() => { examplesState = "error"; }).finally(() => {
-  byId("load-example").disabled = running || !examples.has(current);
-  if (!running && byId("record-mode").dataset.live !== "true" && ["读取示例中", "读取中"].includes(byId("record-mode").textContent)) showSaved();
+  byId("load-example").disabled = running || (!selected && !examples.has(current));
+  if (!selected && !running && byId("record-mode").dataset.live !== "true" && ["读取示例中", "读取中"].includes(byId("record-mode").textContent)) showSaved();
+});
+fetch("./catalog.json").then(response => {
+  if (!response.ok) throw new Error("Catalog HTTP " + response.status);
+  return response.json();
+}).then(data => {
+  for (const item of data.scenarios) scenarios.set(item.id, item);
+  renderScenarios();
+}).catch(() => {
+  byId("scenario-stages").append(element("p", "场景目录暂时无法读取。仍可在下方输入任务。", "empty"));
 });

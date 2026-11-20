@@ -5,7 +5,7 @@ import shutil
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 
 def exercise(url):
@@ -38,6 +38,30 @@ def exercise(url):
             if domain == "pharma":
                 assert "NCT00440687" in json.dumps(report["tools"])
             print(domain, report["status"], len(report["tools"]), flush=True)
+        catalog = page.request.get(url + "catalog.json").json()["scenarios"]
+        assert len(catalog) == 27
+        page.set_viewport_size({"width": 375, "height": 900})
+        for domain in {item["domain"] for item in catalog}:
+            page.locator(f'label:has(input[name=domain][value="{domain}"])').click()
+            choices = page.locator("button[data-scenario]")
+            assert choices.count() == 9
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+            for item in (row for row in catalog if row["domain"] == domain):
+                tool_id = item["id"]
+                page.locator(f'button[data-scenario="{tool_id}"]').click()
+                expect(page.locator('#record-mode[data-live="false"]')).to_have_text("已保存的运行")
+                assert page.locator("#request").input_value() == item["prompt"]
+                page.locator("#run").click()
+                page.locator('#record-mode[data-live="true"]').wait_for()
+                with page.expect_download() as event:
+                    page.locator(".download").click()
+                report = json.loads(event.value.path().read_text())
+                assert [tool["id"] for tool in report["tools"]] == [tool_id]
+                assert report["status"] in ("completed", "needs_review")
+                if tool_id.startswith(domain + "-"):
+                    assert report["tools"][0]["output"]["records"]
+                    assert report["tools"][0]["data"]["kind"] == "synthetic"
+                print(tool_id, report["status"], flush=True)
         browser.close()
 
 

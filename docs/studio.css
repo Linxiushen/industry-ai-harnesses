@@ -54,6 +54,14 @@ h1 { font-size: clamp(29px, 4vw, 46px); font-weight: 690; line-height: 1.26; let
 .domain-en, .domain-option strong, .domain-scenarios { display: block }
 .domain-option strong { margin: 4px 0 1px; font-size: 18px }
 .domain-scenarios { font-size: 13px; color: var(--copy) }
+.scenario-library { margin: 0 0 24px; padding: 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px }
+.scenario-library h2 { font-size: 17px }
+.scenario-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 14px; margin-top: 10px }
+.scenario-stage { min-width: 0; border-top: 2px solid var(--rule); padding-top: 8px }
+.scenario-stage h3 { font-size: 13px; margin: 0 0 3px; color: var(--muted) }
+.scenario { display: block; width: 100%; min-height: 32px; margin-block: 3px; padding: 5px 8px; border-radius: 4px; text-align: left; font-size: 13px; background: var(--paper); color: var(--ink) }
+.scenario:hover, .scenario[aria-pressed="true"] { background: var(--active-bg); color: var(--active) }
+.scenario[aria-pressed="true"] { box-shadow: inset 3px 0 var(--active); font-weight: 650 }
 .workbench { display: grid; grid-template-columns: minmax(240px, .72fr) minmax(0, 1.65fr); align-items: start; gap: 20px }
 .composer, .record { min-width: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px }
 .composer { padding: 20px }
@@ -131,6 +139,8 @@ pre { max-height: 290px; overflow: auto; padding: 12px; border: 1px solid var(--
   .domain-scenarios { font-size: 12px }
 }
 @media(max-width: 640px) {
+  .scenario-stages { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+  .scenario { min-height: 38px }
   .workbench { grid-template-columns: 1fr }
   .mast-inner { min-height: 56px }
   .mast-inner nav { gap: 12px; font-size: 13px }

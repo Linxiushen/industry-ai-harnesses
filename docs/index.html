@@ -23,15 +23,19 @@
   <main id="workspace" class="page">
     <div class="intro">
       <h1>行业 Agent 工作台</h1>
-      <p>选一个行业，告诉 Agent 你要做的决定。查看它调用了哪些工具、依据什么数据，以及哪些结果还需要人来判断。</p>
+      <p>按业务阶段挑选任务，查看决策结果和依据。也可以修改任务，让 Agent 根据你的请求选工具。</p>
     </div>
     <noscript>这个交互工作台需要启用 JavaScript。你也可以从 GitHub 下载项目，用 Python 在本地运行。</noscript>
     <fieldset class="domain-switch">
       <legend class="sr-only">选择行业</legend>
-      <label class="domain-option"><input type="radio" name="domain" value="pharma" checked><span class="domain-en" lang="en">Clinical operations</span><strong>制药临床运营</strong><span class="domain-scenarios">试验检索 · 招募站点 · 登记跟进</span></label>
-      <label class="domain-option"><input type="radio" name="domain" value="manufacturing"><span class="domain-en" lang="en">Manufacturing</span><strong>制造设备运维</strong><span class="domain-scenarios">风险排序 · 限额巡检 · 工单草稿</span></label>
-      <label class="domain-option"><input type="radio" name="domain" value="energy"><span class="domain-en" lang="en">Energy systems</span><strong>能源负荷运营</strong><span class="domain-scenarios">日前预测 · 尖峰预警 · 错峰排班</span></label>
+      <label class="domain-option"><input type="radio" name="domain" value="pharma" checked><span class="domain-en" lang="en">Clinical operations</span><strong>制药临床运营</strong><span class="domain-scenarios">试验立项 → 招募与监查 → 结题</span></label>
+      <label class="domain-option"><input type="radio" name="domain" value="manufacturing"><span class="domain-en" lang="en">Manufacturing</span><strong>制造运营</strong><span class="domain-scenarios">计划与物料 → 生产质检 → 发运</span></label>
+      <label class="domain-option"><input type="radio" name="domain" value="energy"><span class="domain-en" lang="en">Energy systems</span><strong>能源运营</strong><span class="domain-scenarios">项目评估 → 负荷管理 → 对账与报告</span></label>
     </fieldset>
+    <section class="scenario-library" aria-labelledby="library-title">
+      <h2 id="library-title">业务场景</h2>
+      <div id="scenario-stages" class="scenario-stages"></div>
+    </section>
     <div class="workbench">
       <aside class="composer" aria-labelledby="compose-title">
         <h2 id="compose-title">下达任务</h2>
@@ -58,7 +62,7 @@
       </aside>
       <section class="record" aria-labelledby="record-title">
         <div class="record-head">
-          <h2 id="record-title">运行记录</h2>
+          <h2 id="record-title" tabindex="-1">运行记录</h2>
           <span id="record-mode" class="mode">读取示例中</span>
         </div>
         <div id="record-content" aria-busy="true"><p class="empty">正在读取随项目发布的真实运行记录。</p></div>
