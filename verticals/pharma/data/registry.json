@@ -1,0 +1,19 @@
+{
+  "kind": "synthetic",
+  "as_of": "2025-01-15",
+  "source": "Original fictional clinical operations cohort. SIM identifiers and site/status combinations are invented.",
+  "studies": [
+    {"id":"SIM-01","conditions":["Type 2 diabetes mellitus"],"phase":["PHASE3"],"status":"RECRUITING","updated":"2024-12-20","sites":[{"city":"Boston","country":"United States","status":"RECRUITING"},{"city":"Seattle","country":"United States","status":"COMPLETED"}]},
+    {"id":"SIM-02","conditions":["Chronic kidney disease","Type 2 diabetes mellitus"],"phase":["PHASE2"],"status":"RECRUITING","updated":"2025-01-09","sites":[{"city":"Chicago","country":"United States","status":"RECRUITING"},{"city":"Toronto","country":"Canada","status":"RECRUITING"}]},
+    {"id":"SIM-03","conditions":["Chronic obstructive pulmonary disease"],"phase":["PHASE3"],"status":"COMPLETED","updated":"2024-09-12","primary_completion":"2023-08-01","completion_type":"ACTUAL","has_results":false,"sites":[]},
+    {"id":"SIM-04","conditions":["Asthma"],"phase":["PHASE2"],"status":"RECRUITING","updated":"2024-12-12","sites":[{"city":"Seattle","country":"United States","status":null}]},
+    {"id":"SIM-05","conditions":["Heart failure"],"phase":["PHASE2"],"status":"COMPLETED","updated":"2024-11-17","primary_completion":"2022-04-12","completion_type":"ACTUAL","has_results":true,"sites":[]},
+    {"id":"SIM-06","conditions":["Non-small cell lung cancer"],"phase":["PHASE2"],"status":"RECRUITING","updated":"2024-02-12","sites":[{"city":"Denver","country":"United States","status":"RECRUITING"}]},
+    {"id":"SIM-07","conditions":["Breast cancer"],"phase":["PHASE1"],"status":"COMPLETED","updated":"2024-09-12","primary_completion":"2024-06-01","completion_type":"ACTUAL","has_results":false,"sites":[]},
+    {"id":"SIM-08","conditions":["Heart failure","Chronic kidney disease"],"phase":["PHASE3"],"status":"COMPLETED","updated":"2024-12-20","primary_completion":"2022-08","completion_type":"ACTUAL","has_results":false,"sites":[]},
+    {"id":"SIM-09","conditions":["Type 1 diabetes mellitus"],"phase":["PHASE2"],"status":"ACTIVE_NOT_RECRUITING","updated":"2025-01-04","sites":[{"city":"Atlanta","country":"United States","status":"RECRUITING"}]},
+    {"id":"SIM-10","conditions":["Rheumatoid arthritis"],"phase":["PHASE3"],"status":"COMPLETED","updated":"2024-06-19","primary_completion":"2022-07-10","completion_type":"ACTUAL","has_results":false,"sites":[]},
+    {"id":"SIM-11","conditions":["Small cell lung cancer"],"phase":["PHASE2"],"status":"RECRUITING","updated":"2024-12-15","sites":[{"city":"London","country":"United Kingdom","status":"RECRUITING"}]},
+    {"id":"SIM-12","conditions":["Psoriatic arthritis"],"phase":["PHASE3"],"status":"COMPLETED","updated":"2024-11-20","primary_completion":"2021-02-12","completion_type":"ESTIMATED","has_results":false,"sites":[]}
+  ]
+}

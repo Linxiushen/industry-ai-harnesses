@@ -1,0 +1,102 @@
+{
+  "digest_encoding": "SHA256 of UTF-8 json.dumps(run(...), sort_keys=True, separators=(\",\",\":\"), allow_nan=False).",
+  "runs": {
+    "synthetic": {
+      "data": {
+        "kind": "synthetic",
+        "source": "harness.synthetic_days",
+        "seed": 4163,
+        "normalized_sha256": "ced41c44fc3f8bb93f6bf0468a49dda87983af86dba3021b8a4c02bbde297543",
+        "scope": "Simulated single electricity system, MW averaged over each UTC hour.",
+        "start": "2024-04-01",
+        "end_inclusive": "2024-06-23",
+        "training_days": 56,
+        "calibration_days": 14,
+        "test_days": 14,
+        "training_end": "2024-05-26",
+        "test_start": "2024-06-10",
+        "hour_basis": "UTC interval start"
+      },
+      "metrics": {
+        "day-ahead-load": {
+          "mae_mw": 4.0316,
+          "prior_day_mae_mw": 4.1429,
+          "prior_week_mae_mw": 5.6028,
+          "test_hours": 336
+        },
+        "peak-hour-alerts": {
+          "true_positives": 15,
+          "false_positives": 12,
+          "missed_hours": 1,
+          "event_hours": 16,
+          "alert_hours": 27,
+          "precision": 0.5556,
+          "recall": 0.9375,
+          "f1": 0.6977,
+          "prior_day_f1": 0.5625
+        },
+        "flexible-load-scheduling": {
+          "mean_daily_peak_mw": 99.4776,
+          "fixed_mean_daily_peak_mw": 107.3236,
+          "mean_peak_reduction_mw": 7.8461,
+          "peak_worse_days": 0,
+          "total_incremental_energy_mwh": 401.1991
+        }
+      },
+      "checks": {
+        "chronological_split": true,
+        "all_336_test_predictions": true,
+        "all_schedules_feasible": true
+      },
+      "output_sha256": "073274c337e5f3eea55915516e6b40d79731ddffa6003a76bd1c822eddddd4ea"
+    },
+    "reopt_reference": {
+      "data": {
+        "kind": "public modeled reference profile",
+        "source": "https://github.com/NatLabRockies/REopt.jl/blob/35abb019e29532ef45d4a61c8dcecd2b8cdb74da/test/data/loads_kw_largeoffice_sanfran.csv",
+        "normalized_sha256": "c1955d24fa5cea359605cf4f2a72b2dfff34477ba3a8637bbdfc7ce0fbc486fe",
+        "scope": "REopt San Francisco large-office reference load, converted from kW to MW.",
+        "hour_basis": "Illustrative fixed-hour calendar anchored at Sunday 2017-01-01. Source contains no timestamps.",
+        "start": "2017-01-01",
+        "end_inclusive": "2017-12-31",
+        "training_days": 337,
+        "calibration_days": 14,
+        "test_days": 14,
+        "training_end": "2017-12-03",
+        "test_start": "2017-12-18"
+      },
+      "metrics": {
+        "day-ahead-load": {
+          "mae_mw": 0.0886,
+          "prior_day_mae_mw": 0.1173,
+          "prior_week_mae_mw": 0.0325,
+          "test_hours": 336
+        },
+        "peak-hour-alerts": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "missed_hours": 0,
+          "event_hours": 0,
+          "alert_hours": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "prior_day_f1": null
+        },
+        "flexible-load-scheduling": {
+          "mean_daily_peak_mw": 0.8385,
+          "fixed_mean_daily_peak_mw": 0.8418,
+          "mean_peak_reduction_mw": 0.0033,
+          "peak_worse_days": 0,
+          "total_incremental_energy_mwh": 1.9377
+        }
+      },
+      "checks": {
+        "chronological_split": true,
+        "all_336_test_predictions": true,
+        "all_schedules_feasible": true
+      },
+      "output_sha256": "18c660b0213df77ea887b042ca2abe45deaf445108f1c8703f56f946744ca36c"
+    }
+  }
+}

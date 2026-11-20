@@ -1,0 +1,9 @@
+[
+  {"query":"NSCLC","relevant":["NCT00188279"]},
+  {"query":"COPD","relevant":["NCT00440687"]},
+  {"query":"bipolar disorder","relevant":["NCT02490241","NCT00672490","NCT00665366","NCT01012180"]},
+  {"query":"knee osteoarthritis","relevant":["NCT00995306"]},
+  {"query":"hemodialysis","relevant":["NCT01578200"]},
+  {"query":"voice disorders","relevant":["NCT02102399"]},
+  {"query":"migraine","relevant":[]}
+]

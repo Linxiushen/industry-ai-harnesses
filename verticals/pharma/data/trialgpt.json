@@ -1,0 +1,121 @@
+{
+  "kind": "historical_registry_metadata",
+  "source": "NCBI TrialGPT SIGIR corpus, first 12 lines",
+  "source_commit": "1b3242cd50c153a9c324661d4a0bd94fc68a4226",
+  "source_blob": "b5b26ef2f945b84a8b6f20da1fe68db3f263c872",
+  "retrieved_on": "2026-11-20",
+  "studies": [
+    {
+      "id": "NCT00995306",
+      "conditions": [
+        "Osteoarthritis of the Knee"
+      ],
+      "phase": [
+        "Phase 3"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT00995306"
+    },
+    {
+      "id": "NCT02490241",
+      "conditions": [
+        "Bipolar Disorder"
+      ],
+      "phase": [],
+      "url": "https://clinicaltrials.gov/study/NCT02490241"
+    },
+    {
+      "id": "NCT02073188",
+      "conditions": [
+        "Diabetes Mellitus"
+      ],
+      "phase": [
+        "Phase 3"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT02073188"
+    },
+    {
+      "id": "NCT00188279",
+      "conditions": [
+        "Non-small Cell Lung Cancer"
+      ],
+      "phase": [
+        "Phase 2"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT00188279"
+    },
+    {
+      "id": "NCT02110251",
+      "conditions": [
+        "Peripheral Arterial Disease",
+        "Rutherford 4 and 5 With Possibility to Improve Vascularization"
+      ],
+      "phase": [],
+      "url": "https://clinicaltrials.gov/study/NCT02110251"
+    },
+    {
+      "id": "NCT02102399",
+      "conditions": [
+        "Voice Disorders"
+      ],
+      "phase": [],
+      "url": "https://clinicaltrials.gov/study/NCT02102399"
+    },
+    {
+      "id": "NCT00672490",
+      "conditions": [
+        "Acute Mania in Bipolar Disorder"
+      ],
+      "phase": [
+        "Phase 4"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT00672490"
+    },
+    {
+      "id": "NCT00665366",
+      "conditions": [
+        "Bipolar Disorder Mania"
+      ],
+      "phase": [
+        "Phase 3"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT00665366"
+    },
+    {
+      "id": "NCT00440687",
+      "conditions": [
+        "Chronic Obstructive Pulmonary Disease"
+      ],
+      "phase": [
+        "Phase 4"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT00440687"
+    },
+    {
+      "id": "NCT01012180",
+      "conditions": [
+        "Bipolar Disorder"
+      ],
+      "phase": [],
+      "url": "https://clinicaltrials.gov/study/NCT01012180"
+    },
+    {
+      "id": "NCT01578200",
+      "conditions": [
+        "Hemodialysis",
+        "Hyperphosphatemia"
+      ],
+      "phase": [
+        "Phase 3"
+      ],
+      "url": "https://clinicaltrials.gov/study/NCT01578200"
+    },
+    {
+      "id": "NCT01833416",
+      "conditions": [
+        "Infection in Solid Organ Transplant Recipients"
+      ],
+      "phase": [],
+      "url": "https://clinicaltrials.gov/study/NCT01833416"
+    }
+  ]
+}
