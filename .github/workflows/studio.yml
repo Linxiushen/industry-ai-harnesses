@@ -46,5 +46,8 @@ jobs:
           SITE_URL: ${{ steps.pages.outputs.page_url }}
         run: |
           curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/" --output /tmp/studio.html
+          grep -q 'id="featured-case-list"' /tmp/studio.html
           curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/replays.json" | python -c "import json,sys; assert {r['domain'] for r in json.load(sys.stdin)['examples']} == {'pharma','energy','manufacturing'}"
           curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/catalog.json" | python -c "import collections,json,sys; assert collections.Counter(r['domain'] for r in json.load(sys.stdin)['scenarios']) == {'pharma':9,'energy':9,'manufacturing':9}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/showcase.json" | python -c "import json,sys; assert {r['id'] for r in json.load(sys.stdin)['cases']} == {'trial_landscape','inspection-queue','flexible-load-scheduling'}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error "${SITE_URL%/}/inspection-capacity.json" | python -c "import json,sys; d=json.load(sys.stdin); assert d['default_slots'] == 3; assert [r['tools'][0]['output']['slots_per_batch'] for r in d['reports']] == list(range(1,9))"
