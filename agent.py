@@ -7,6 +7,7 @@ from pathlib import Path
 
 from industry_agent.model import LocalModelPlanner
 from industry_agent.runtime import run_agent
+from verticals.manufacturing.harness import MAX_INSPECTION_SLOTS
 
 
 def print_summary(report):
@@ -36,6 +37,8 @@ def main(argv=None):
                         help="Restrict the plan to one industry")
     parser.add_argument("--data-dir", type=Path, help="Use a custom cohort with --domain")
     parser.add_argument("--max-tools", type=int, choices=(1, 2, 3), default=3)
+    parser.add_argument("--inspection-slots", type=int, choices=range(1, MAX_INSPECTION_SLOTS + 1),
+                        help="Set inspections per batch for a manufacturing queue or work order")
     parser.add_argument("--local-model", metavar="NAME",
                         help="Use a model already running locally (e.g. Ollama)")
     parser.add_argument("--port", type=int, help="Local chat API port (default 11434)")
@@ -51,7 +54,7 @@ def main(argv=None):
         if args.local_model is not None:
             planner = LocalModelPlanner(args.local_model, 11434 if args.port is None else args.port)
         report = run_agent(args.request, domain=args.domain, max_tools=args.max_tools,
-                           planner=planner, data_dir=args.data_dir)
+                           planner=planner, data_dir=args.data_dir, inspection_slots=args.inspection_slots)
         if args.json or args.out:
             full = json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False)
             if args.out:

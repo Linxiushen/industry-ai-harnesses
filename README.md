@@ -1,57 +1,88 @@
-# Industry AI Harnesses
+# Industry Agent Studio
 
-[**Open the live Agent Studio**](https://linxiushen.github.io/industry-ai-harnesses/) · [中文说明](README.zh-CN.md)
+**27 runnable business workflows for clinical trial operations, manufacturing, and energy.** Start with a business question, follow the agent's tool choices, and inspect the evidence behind each decision. The browser demo runs on GitHub Pages with no sign-in or API key.
 
-The studio includes **27 runnable scenarios**, nine per industry. The scenario library follows business phases, with a replay and a new local execution for each decision. The 18 added cases use synthetic operating data.
+[**Launch the interactive Studio →**](https://linxiushen.github.io/industry-ai-harnesses/) · [中文说明](README.zh-CN.md) · [Runtime architecture](ARCHITECTURE.md) · [Evidence and sources](#benchmark-evidence)
 
-| Industry | Lifecycle coverage |
-| --- | --- |
-| Clinical trial operations | Evidence search, recruiting locations, site startup, enrollment forecast, supply inventory, monitoring visits, data query aging, registry follow-up, closeout readiness |
-| Manufacturing operations | Capacity, material coverage, finite scheduling, quality disposition, failure ranking, inspection queue, work-order evidence, OEE losses, shipment traceability |
-| Energy operations | PV screening, storage economics, demand forecast, peak watch, flexible load scheduling, demand response, service reliability, bill reconciliation, purchased electricity emissions |
+[![Industry Agent Studio with the task composer, scenario library, and featured case replays](docs/studio-preview.png)](https://linxiushen.github.io/industry-ai-harnesses/)
 
-Ask the agent to find historical COPD trials, allocate inspection slots or prepare an electricity shift briefing. Each run shows its tool choices, observations, remaining work and evidence for the reviewer. Try a one-tool budget on a manufacturing handoff, then raise it to three to see how the inspection queue leads to work-order drafts. The browser executes the Python graph locally after downloading the runtime. Saved examples are available immediately.
+## Try a decision workflow
+
+| Who is deciding | What to try in the Studio | What to inspect |
+| --- | --- | --- |
+| Clinical operations analyst | Open **Trial search** and run the COPD example. | Open the ClinicalTrials.gov record for a search hit, then compare matched terms and archived indications. |
+| Maintenance planner | Run a **manufacturing shift briefing** with a one-tool budget. Repeat with three. | See what gets deferred, then review inspection slots and draft work orders. In the bundled simulation, record 3022's draft cites 8.116 kW of mechanical power. |
+| Energy operations planner | Try **flexible load scheduling**. | Compare the proposed operating window with a fixed 17:00 start at the same energy. The report counts how often moving the load made the peak worse. |
+
+Select a scenario to load a **saved run** immediately. Choose **Run Agent** to recalculate with the current request and tool budget. The first live run downloads the pinned Python runtime from the Pages site. The result separates the decision overview, data evidence, and execution trace. Download the JSON to retain the input, used tools, observations, metrics, and items for human review.
+
+## Scenario coverage
+
+Each industry has nine scenarios. The original nine workflows include search, ranking, and forecasting benchmarks. The other 18 run individual operating decisions against labeled synthetic fixtures.
+
+| Industry | Business stage | Runnable scenarios |
+| --- | --- | --- |
+| Clinical trial operations | Study planning and startup | Trial evidence search · recruiting location shortlist · site startup checklist |
+| Clinical trial operations | Recruitment and execution | Enrollment projection · trial supplies inventory |
+| Clinical trial operations | Quality and data | Monitoring visit queue · data query aging |
+| Clinical trial operations | Closeout and archiving | Registry results follow-up · closeout readiness |
+| Manufacturing | Planning and supply | Order capacity planning · material coverage and replenishment |
+| Manufacturing | Production and quality | Finite-capacity scheduling · sampling and lot disposition |
+| Manufacturing | Equipment and efficiency | Failure risk ranking · fixed-capacity inspection queue · work-order drafts · shift OEE loss analysis |
+| Manufacturing | Shipping and traceability | Shipment traceability |
+| Energy | Projects and investment | Rooftop PV screening · battery economics |
+| Energy | Operations and response | Day-ahead load forecast · peak watch · flexible-load scheduling · demand response verification |
+| Energy | Service and settlement | Service reliability review · bill reconciliation |
+| Energy | Emissions reporting | Purchased electricity emissions |
+
+[Clinical trial operations guide](verticals/pharma/README.md) · [Manufacturing guide](verticals/manufacturing/README.md) · [Energy guide](verticals/energy/README.md)
+
+## Benchmark evidence
+
+| Workload and comparator | Measured result | How to read it |
+| --- | --- | --- |
+| **Trial search.** Historical projection of 12 NCBI TrialGPT registry records, with six labeled positive queries. | MRR@3 **1.00 vs 0.67** for literal word matching. | Two positive queries use abbreviations in the project's dictionary. The comparison measures the ranker and dictionary on this small snapshot. Site screening and registry follow-up use fictional records. |
+| **Inspection allocation.** Public UCI AI4I synthetic workload, with 55 labeled failures in the test split. Both policies get 300 inspection slots. | **37 of 55 vs 26 of 55** for tool wear alone. The model sent **263 false alerts**. Draft categories matched a recorded label for **32 of the 37** captured failures. | The replay uses two field-equivalent mirrors and measures a limited inspection queue. The work-order score is conditional on already capturing a failure. |
+| **Day-ahead load and scheduling.** Final 336 hours of the REopt large-office modeled load profile. | Forecast MAE was **88.6 kW vs 32.5 kW** for the same hour last week. For scheduling, a movable block reduced the average daily peak by **3.3 kW** against a fixed 17:00 start at equal energy. | The weekly baseline won the forecast comparison. The test window had zero peak events, so it yields no alert sensitivity estimate. The calendar and flexible load are illustrative. |
+
+The three industries have public engineering references for these decisions. TrialGPT starts with registry retrieval, Microsoft documents a maintenance review workflow, and BuildingsBench publishes short-term load forecasting benchmarks. [TrialGPT](https://github.com/ncbi-nlp/TrialGPT) · [Microsoft predictive maintenance project](https://github.com/microsoft/pdm-fabric-foundry) · [BuildingsBench](https://github.com/NatLabRockies/BuildingsBench)
+
+The online Studio uses bundled inputs. The domain guides distinguish historical registry records, original simulations, and optional public benchmark downloads. They document source revisions, reuse terms, evaluation windows, and commands for reproducing the results above. [NCBI TrialGPT](https://github.com/ncbi-nlp/TrialGPT) · [UCI AI4I](https://doi.org/10.24432/C5HS5C) · [REopt reference data](https://github.com/NatLabRockies/REopt.jl/blob/35abb019e29532ef45d4a61c8dcecd2b8cdb74da/test/data/loads_kw_largeoffice_sanfran.csv)
+
+## Run from the repository
+
+Use Python 3.11+ and the standard library. The default command-line workflows run offline.
 
 ```sh
+# Inspect what a one-tool budget leaves pending
+python agent.py "Prepare a manufacturing shift briefing" --max-tools 1 --json
+
+# Run the handoff and save the full audit record
 python agent.py "Prepare a manufacturing shift briefing" --max-tools 3 --out output/shift.json
-```
 
-The default planner uses domain vocabulary and explicit rules. Observations can add a follow-up tool, request clarification or route decisions for review. The budget counts distinct tool decisions surfaced to the user. Energy and manufacturing share one backtest per domain request. To try model-based planning with a model you already serve on localhost, add `--local-model YOUR_MODEL --port 11434` to the CLI command. [Architecture, deployment and limits](ARCHITECTURE.md)
+# Select one tool by its scenario ID
+python agent.py manufacturing-shipment-trace --json
 
-Three runnable reference projects for teams evaluating where AI can help with operational decisions. A clinical operations analyst gets trial evidence and follow-up queues, a maintenance planner gets a fixed number of inspections, and an energy planner gets tomorrow's load forecast and shift schedule. Each harness produces JSON with decisions, supporting data, baseline comparisons and checks.
-
-[中文项目导览](README.zh-CN.md) · [Clinical trial operations](verticals/pharma/README.md) · [Manufacturing maintenance](verticals/manufacturing/README.md) · [Electricity demand](verticals/energy/README.md)
-
-## Run all nine workflows
-
-With Python 3.11+ in the checkout, run the nine original benchmark workflows:
-
-```sh
+# Replay the nine original benchmark workflows
 python run.py all --out output/decisions.json
 ```
 
-The default run works offline using the Python standard library. The console shows metrics. The JSON file includes the ranked trials, site and registry queues, hourly forecasts, alerts, scheduled load blocks, inspection IDs and work-order drafts. A failed built-in check exits with a nonzero status. To integrate one project, use `python run.py manufacturing` or import the domain module's `run(data_dir=None)` function. A custom cohort can be passed as `python run.py pharma --data-dir path/to/cohort`. Each domain guide documents its data format.
+The first command returns a report with `budget_exhausted` and exits with code 1. The pending inspection queue is recorded in the trace. Replace `all` with `pharma`, `manufacturing`, or `energy` to replay just that domain. The domain guides show how to supply a custom dataset. The CLI can also use a compatible model you already serve on localhost via `--local-model YOUR_MODEL`. [Local model setup](ARCHITECTURE.md#run-locally) · [Build the website](ARCHITECTURE.md#build-the-website)
 
-| Harness | Three decisions | What the replay showed |
-| --- | --- | --- |
-| [Clinical trial operations](verticals/pharma/README.md) | Retrieve related trials, shortlist recruiting locations, prioritize registry follow-up. | Six labeled searches over 12 historical NCBI trial records each returned a relevant trial first. Literal word matching averaged 0.67 reciprocal rank. On a separate fictional cohort, two study/city pairs and two registry follow-ups were queued. |
-| [Manufacturing maintenance](verticals/manufacturing/README.md) | Score machine condition, allocate inspection slots, draft work orders with sensor evidence. | On the public UCI AI4I synthetic benchmark, 300 reviews found 37 of 55 labeled failures versus 26 by tool wear. The model also sent 263 false alerts. Of the 37 captured failures, 32 draft categories matched a recorded label. |
-| [Electricity demand](verticals/energy/README.md) | Forecast 24 hourly loads, flag peak hours, schedule a flexible three-hour load. | On a national-lab office load profile, the final 336 hours gave a forecast MAE of 88.6 kW versus 32.5 kW for the same hour last week. Shifting an identical load cut the average daily peak by 3.3 kW versus a fixed 17:00 start. The profile is modeled and has an illustrative calendar. |
+## What the harness does
 
-## Why these three
+A shared Python graph powers the CLI and the browser worker. The default planner reads Chinese or English task text against the scenario catalog. It filters execution to registered tools, asks for clarification when it cannot plan the request, and can use an observation to queue a follow-up tool while budget remains. Industry code performs retrieval, scoring, forecasting, or rules-based calculations. Review items keep decisions such as site outreach, maintenance orders, and scheduling proposals available for a human to check.
 
-- **Clinical operations.** The NCBI TrialGPT team published code for retrieving, matching and ranking trials. Registry search gives an analyst a verifiable artifact early in a pilot. Relevance can be scored by rank and each factual hit can link back to its study. [NCBI TrialGPT](https://github.com/ncbi-nlp/TrialGPT)
-- **Manufacturing maintenance.** Microsoft's public manufacturing project connects predictive maintenance to a review workflow. With a fixed number of inspections, a team can measure how many failures it captures and how many false alerts consume its slots. [Microsoft predictive maintenance project](https://github.com/microsoft/pdm-fabric-foundry) · [UCI AI4I benchmark](https://doi.org/10.24432/C5HS5C)
-- **Energy operations.** The national lab maintains a short-term load forecasting benchmark and publishes building load profiles for optimization. Hourly inputs make it possible to compare a forecast against a seasonal baseline, then replay the scheduling decision at equal energy. [BuildingsBench](https://github.com/NatLabRockies/BuildingsBench) · [REopt.jl](https://github.com/NatLabRockies/REopt.jl)
-
-The selection reflects public engineering activity and the availability of measurable workflows. Market-share rankings, customer deployments and plant or clinical outcomes would require different evidence. The implementations use retrieval, statistical learning and explicit operational rules. They run on a CPU without paid model calls.
-
-## Data, checks and license
-
-The guides distinguish bundled fixtures from downloaded benchmarks and give commands to replay public data. Local inputs and full generated reports can be kept in `local-data/` and `output/`. The MIT license covers the original code and fixtures. See the guides for third-party attribution and source terms.
-
-```sh
-python -m unittest discover -s verticals/pharma -v
-python -m unittest discover -s verticals/manufacturing -v
-python -m unittest discover -s verticals/energy -v
+```mermaid
+flowchart LR
+    A["Browser or CLI request"] --> B["Plan and validate"]
+    B --> C["Call a registered tool"]
+    C --> D["Observe the result"]
+    D -->|"Follow-up within budget"| C
+    D --> E["Record decision, evidence, trace, and review items"]
+    B -->|"Clarification needed"| E
 ```
+
+PocketFlow provides the graph primitives. The GitHub Pages build serves the pinned Pyodide runtime, the scenario catalog, and saved examples. Outputs include the request, final status, data and its provenance where available, step list, tool reports, and review items. [Architecture and deployment](ARCHITECTURE.md) · [Framework and data attribution](THIRD_PARTY.md) · [MIT license](LICENSE)
+
+Run the agent contract tests with `python -m unittest discover -s tests -v`. GitHub Actions exercise the offline workflows and the browser worker, then check the public studio after deployment. [Replay workflow](https://github.com/Linxiushen/industry-ai-harnesses/actions/workflows/replay.yml) · [Pages workflow](https://github.com/Linxiushen/industry-ai-harnesses/actions/workflows/studio.yml)
