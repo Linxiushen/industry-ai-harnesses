@@ -30,6 +30,80 @@ class AgentGraphTests(unittest.TestCase):
         self.assertEqual(report["steps"][2]["follow_up"], "inspection-queue")
         self.assertIn("inspection-queue", report["review"][-1])
 
+    def test_inspection_capacity_sweep_uses_one_cohort_and_equal_ranked_workload(self):
+        manufacturing = runtime.manufacturing
+        rows = manufacturing.synthetic_rows()
+        test = rows[len(rows) * 3 // 4:]
+        batches = [test[start:start + manufacturing.BATCH]
+                   for start in range(0, len(test), manufacturing.BATCH)]
+        baseline = [sorted(batch, key=lambda row: (-row.wear, row.sequence)) for batch in batches]
+        truth = {row.sequence for row in test if row.failed}
+        original = run_agent("inspection-queue", domain="manufacturing", max_tools=1)
+        prior_queues = [[] for _ in batches]
+        for slots in range(1, manufacturing.MAX_INSPECTION_SLOTS + 1):
+            with self.subTest(slots=slots):
+                report = run_agent("inspection-queue", domain="manufacturing", max_tools=1,
+                                   inspection_slots=slots)
+                (queue,) = report["tools"]
+                self.assertEqual(report["status"], "needs_review")
+                self.assertEqual(report["data"]["sha256"], original["data"]["sha256"])
+                self.assertEqual(report["data"]["inspection_capacity"], {
+                    "slots_per_batch": slots, "default_slots_per_batch": manufacturing.CAPACITY,
+                })
+                self.assertEqual(report["steps"][0]["parameters"], {"inspection_slots": slots})
+                self.assertEqual(queue["output"]["slots_per_batch"], slots)
+                queues = queue["output"]["batches"]
+                self.assertEqual(len(queues), len(batches))
+                for previous, current, cohort in zip(prior_queues, queues, batches):
+                    self.assertEqual(current[:len(previous)], previous)
+                    self.assertEqual(len(current), min(slots, len(cohort)))
+                    self.assertLessEqual(set(current), {row.sequence for row in cohort})
+                prior_queues = queues
+                selected = [sequence for current in queues for sequence in current]
+                caught = len(truth.intersection(selected))
+                expected_baseline = sum(row.failed for batch in baseline for row in batch[:slots])
+                metrics = queue["metrics"]
+                self.assertEqual(metrics["records_reviewed"], len(selected))
+                self.assertEqual(metrics["failures_in_queue"], caught)
+                self.assertEqual(metrics["false_alerts"], len(selected) - caught)
+                self.assertEqual(metrics["failures_outside_queue"], len(truth) - caught)
+                self.assertEqual(metrics["wear_only_failures_at_same_capacity"], expected_baseline)
+                if slots == manufacturing.CAPACITY:
+                    self.assertEqual(report["tools"], original["tools"])
+
+    def test_inspection_capacity_follows_adaptive_budget_and_work_order(self):
+        scenario = "制造设备故障交接"
+        with patch.object(runtime.manufacturing, "run", wraps=runtime.manufacturing.run) as evaluate:
+            report = run_agent(scenario, domain="manufacturing", inspection_slots=5)
+        evaluate.assert_called_once_with(None, slots=5)
+        ranking, queue, orders = report["tools"]
+        self.assertEqual(ranking, run_agent(scenario)["tools"][0])
+        self.assertEqual([case["sequence"] for case in orders["output"]["draft_cases"]],
+                         [sequence for batch in queue["output"]["batches"] for sequence in batch])
+        direct = run_agent("work-order-evidence", domain="manufacturing", max_tools=1, inspection_slots=5)
+        self.assertEqual(direct["tools"], [orders])
+        bounded = run_agent(scenario, domain="manufacturing", max_tools=2, inspection_slots=5)
+        self.assertEqual(bounded["status"], "budget_exhausted")
+        self.assertEqual(bounded["tools"], [ranking, queue])
+
+    def test_inspection_capacity_checks_value_domain_and_reachability(self):
+        for invalid in [True, False, 0, 9, "4", 4.0]:
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, "integer from 1 to 8"):
+                run_agent("inspection-queue", domain="manufacturing", inspection_slots=invalid)
+        for domain in [None, "energy", "pharma"]:
+            with self.subTest(domain=domain), self.assertRaisesRegex(ValueError, "explicit manufacturing"):
+                run_agent("inspection-queue", domain=domain, inspection_slots=4)
+        unrelated = [("condition-monitoring", 3), ("manufacturing-oee-losses", 3),
+                     ("制造设备故障交接", 1), ("制造设备全流程", 1)]
+        with patch.object(runtime.manufacturing, "run", wraps=runtime.manufacturing.run) as evaluate:
+            for request, budget in unrelated:
+                with self.subTest(request=request, budget=budget):
+                    report = run_agent(request, domain="manufacturing", max_tools=budget, inspection_slots=4)
+                    self.assertEqual(report["status"], "needs_clarification")
+                    self.assertEqual(report["tools"], [])
+                    self.assertIn("reachable inspection queue", report["review"][0])
+        evaluate.assert_not_called()
+
     def test_retrieve_different_conditions_and_abstain_on_no_evidence(self):
         for request, expected in [("检索慢阻肺临床试验", "NCT00440687"),
                                   ("Find historical NSCLC trials", "NCT00188279")]:
