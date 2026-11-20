@@ -30,7 +30,8 @@ self.onmessage = async ({data}) => {
     const py = await boot;
     progress("正在选择工具并核对运行结果。");
     py.globals.set("studio_task", JSON.stringify({
-      request: data.request, domain: data.domain || null, max_tools: data.max_tools ?? 3
+      request: data.request, domain: data.domain || null, max_tools: data.max_tools ?? 3,
+      inspection_slots: data.inspection_slots ?? null
     }));
     try {
       const output = await py.runPythonAsync("json.dumps(run_agent(**json.loads(studio_task)), allow_nan=False)");

@@ -1,0 +1,135 @@
+.result-review {
+  background: var(--canvas);
+  border-inline-start: 3px solid #cf9c50;
+}
+
+.result-review-header,
+.result-review-progress,
+.result-review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.record .result-review-title {
+  margin: 0;
+  color: var(--review-ink);
+}
+
+.result-review-progress progress {
+  appearance: none;
+  width: 68px;
+  height: 5px;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--inset);
+  color: var(--active);
+}
+
+.result-review-progress progress::-webkit-progress-bar { background: var(--inset) }
+.result-review-progress progress::-webkit-progress-value { background: var(--active) }
+.result-review-progress progress::-moz-progress-bar { background: var(--active) }
+
+.result-review-count,
+.result-review-storage {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.result-review-storage[data-session-only="true"] { color: var(--review-ink) }
+
+.result-review-list {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 12px 0 14px;
+}
+
+.result-review-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--rail);
+  cursor: pointer;
+}
+
+.result-review-choice:hover { border-color: var(--signal-rule) }
+.result-review-choice:has(input:checked) { background: var(--active-bg) }
+
+.result-review-choice input {
+  width: 16px;
+  height: 16px;
+  margin: 3px 0 0;
+  accent-color: var(--active);
+}
+
+.result-review-message {
+  color: var(--ink);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.result-review-pill {
+  padding: 2px 6px;
+  background: var(--review-bg);
+  border-radius: 4px;
+  color: var(--review-ink);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.result-review-choice input:checked ~ .result-review-pill {
+  color: var(--active);
+  background: var(--canvas);
+}
+
+.result-review-label {
+  display: block;
+  margin-block-end: 5px;
+  color: var(--copy);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.result-review-notes,
+.result-review-incoming-note {
+  display: block;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--control-rule);
+  border-radius: 8px;
+  background: var(--canvas);
+  font-size: 13px;
+  resize: vertical;
+}
+
+.result-review-notes::placeholder { color: var(--muted) }
+.result-review-footer { margin-block-start: 8px }
+.result-review-actions { display: flex; flex-wrap: wrap; gap: 6px }
+.result-review-actions button { font-size: 12px }
+.result-review-import-status { margin-block-start: 8px; color: var(--copy); font-size: 13px }
+.result-review-import-status[data-error="true"] { color: var(--fail) }
+.result-review-incoming summary { display: flex; align-items: center; font-size: 13px }
+.result-review-incoming summary::before { content: "+"; margin-inline-end: 8px }
+.result-review-incoming[open] summary::before { content: "−" }
+.result-review-incoming-note { background: var(--rail) }
+
+@media (max-width: 420px) {
+  .result-review-choice { gap: 8px; padding-inline: 8px }
+  .result-review-progress progress { width: 48px }
+}
+
+@media (forced-colors: active) {
+  .result-review-progress progress { appearance: auto }
+}

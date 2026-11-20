@@ -1,0 +1,196 @@
+.batch-workspace {
+  min-width: 0;
+  container-type: inline-size;
+  padding: clamp(16px, 3vw, 26px);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--canvas);
+  box-shadow: var(--lift);
+  scroll-margin-top: 76px;
+}
+.batch-heading, .batch-summary-head {
+  display: flex;
+  gap: 12px 20px;
+  align-items: start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.batch-heading { margin-bottom: 18px }
+.batch-heading h2 { font-size: clamp(21px, 2.4vw, 26px); font-weight: 670; line-height: 1.3 }
+.batch-heading p, .batch-summary-head p { margin-top: 5px; color: var(--muted); font-size: 13px }
+.batch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr);
+  gap: 16px;
+}
+.batch-picker, .batch-controls {
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  min-width: 0;
+  padding: 14px;
+}
+.batch-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--rail);
+}
+.batch-filter { display: grid; grid-template-columns: minmax(112px, 1fr) minmax(0, 2fr); gap: 12px }
+.batch-field { display: grid; align-content: start; gap: 5px; min-width: 0 }
+.batch-field label { color: var(--copy); font-size: 12px; font-weight: 620 }
+.batch-field :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 7px 10px;
+  color: var(--ink);
+  border: 1px solid var(--control-rule);
+  border-radius: 7px;
+  background: var(--canvas);
+  font: inherit;
+  font-size: 14px;
+}
+.batch-pick-actions, .batch-start-actions, .batch-summary-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+.batch-pick-actions { margin-block: 5px 3px }
+.batch-text, .batch-selected-filter {
+  min-height: 42px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+.batch-text {
+  padding-inline: 2px;
+  color: var(--active);
+  background: none;
+  font-weight: 620;
+}
+.batch-text:not(:disabled):hover { text-decoration: underline; text-underline-offset: 3px }
+.batch-selected-filter { color: var(--copy); cursor: pointer }
+.batch-workspace input[type="checkbox"] { accent-color: var(--active); width: 16px; height: 16px; margin: 0 }
+.batch-catalog {
+  max-height: 228px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--control-rule) transparent;
+  display: grid;
+  gap: 4px;
+  padding: 4px;
+  border-top: 1px solid var(--rule);
+}
+.batch-option {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 45px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.batch-option:has(input:enabled) { cursor: pointer }
+.batch-option:has(input:enabled):hover { background: var(--rail) }
+.batch-option:has(input:checked) { border-color: var(--signal-rule); background: var(--active-bg) }
+.batch-option:has(input:disabled:not(:checked)) { opacity: .58 }
+.batch-option strong, .batch-table tbody th strong { color: var(--ink); font-size: 13px; font-weight: 620 }
+.batch-option small, .batch-table small { display: block; color: var(--muted); font-size: 11px; font-weight: 450 }
+.batch-count { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap }
+.batch-count strong { color: var(--active); font-size: 19px; font-weight: 680; line-height: 1.3 }
+.batch-count span, .batch-mode-note, .batch-empty { color: var(--muted); font-size: 12px }
+.batch-storage-note { color: var(--review-ink) }
+.batch-empty { padding: 10px 6px }
+.batch-settings { display: grid; gap: 10px }
+.batch-start-actions { gap: 7px; margin-top: auto }
+.batch-start-actions .primary { min-height: 44px }
+.batch-summary { margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--rule) }
+.batch-summary-head h3 { font-size: 17px; font-weight: 650 }
+.batch-summary-actions { gap: 6px }
+.batch-summary progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: var(--inset);
+  color: var(--active);
+}
+.batch-summary progress::-webkit-progress-bar { background: var(--inset) }
+.batch-summary progress::-webkit-progress-value { background: var(--active) }
+.batch-summary progress::-moz-progress-bar { background: var(--active) }
+.batch-feedback { margin: 7px 0 10px; min-height: 20px; color: var(--muted); font-size: 12px }
+.batch-table-wrap {
+  position: relative;
+  overflow: auto;
+  max-width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+.batch-table { width: 100%; min-width: 540px; border-collapse: collapse; text-align: left; font-size: 13px }
+.batch-table :is(th, td) { padding: 8px 10px; border: 0; border-bottom: 1px solid var(--rule) }
+.batch-table thead { color: var(--copy); background: var(--rail) }
+.batch-table thead th { font-weight: 620; white-space: nowrap }
+.batch-table tbody tr:last-child > * { border-bottom: 0 }
+.batch-table tbody th { min-width: 120px }
+.batch-table td:nth-child(n + 3) { white-space: nowrap }
+.batch-table td:last-child { width: 1%; white-space: nowrap }
+.batch-cell-label { display: none }
+.batch-table td small.batch-error { max-width: 26ch; color: var(--fail); overflow-wrap: anywhere }
+.batch-state {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 3px 7px;
+  color: var(--copy);
+  background: var(--inset);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.batch-state[data-state="completed"] { color: var(--active); background: var(--active-bg) }
+.batch-state[data-state="running"] { color: var(--live); background: var(--live-bg) }
+.batch-state:is([data-state="needs_review"], [data-state="needs_clarification"], [data-state="budget_exhausted"]) { color: var(--review-ink); background: var(--review-bg) }
+.batch-state[data-state="failed"] { color: var(--fail); background: var(--fail-bg) }
+
+@container (max-width: 640px) {
+  .batch-grid { grid-template-columns: minmax(0, 1.35fr) minmax(170px, 1fr) }
+  .batch-filter { grid-template-columns: minmax(92px, 1fr) minmax(0, 1.5fr); gap: 8px }
+}
+@container (max-width: 560px) {
+  .batch-grid { grid-template-columns: minmax(0, 1fr); gap: 10px }
+  .batch-picker, .batch-controls { padding: 10px }
+  .batch-start-actions { margin-top: 0 }
+  .batch-filter { grid-template-columns: minmax(100px, 1fr) minmax(0, 1.5fr) }
+  .batch-table, .batch-table tbody { display: block; min-width: 0 }
+  .batch-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .batch-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 7px 9px;
+    padding: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .batch-table tbody tr:last-child { border-bottom: 0 }
+  .batch-table tbody :is(th, td) { border: 0; min-width: 0; padding: 0 }
+  .batch-table tbody th { grid-column: span 2 }
+  .batch-table .batch-status-cell { justify-self: end; min-width: 0 }
+  .batch-cell-label { display: block; color: var(--muted); font-size: 11px }
+  .batch-table td.batch-action-cell { grid-column: 1 / -1; justify-self: end; width: auto }
+  .batch-table tr:has(.batch-metric-cell[hidden]) td.batch-action-cell { grid-column: auto; align-self: center }
+  .batch-action-cell:has([hidden]) { display: none }
+}
